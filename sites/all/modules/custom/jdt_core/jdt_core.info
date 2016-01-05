@@ -1,0 +1,3 @@
+name = JDT Core
+description = Carries any global site configuration settings and enables common modules
+core = 7.x

@@ -3,27 +3,23 @@
  * @file
  * A block module that displays recent blog and forum posts.
  */
- 
+
 /**
- * Implements hook_help()
+ * Implements hook_help().
  *
  * Displays help and module information.
- *
- * @param path
- *  Which path of the site we're using to display help
- * @param arg
- *  Array the holds the current path as returned from arg() function
  */
 function current_posts_help($path, $arg) {
   switch ($path) {
     case "admin/help#current_posts":
       return '<p>' . t("A block module that displays recent blog and forum posts.") . '</p>';
-      break;
+
+    break;
   }
 }
 
 /**
- * Implements hook_block_info()
+ * Implements hook_block_info().
  */
 function current_posts_block_info() {
   $blocks['current_posts'] = array(
@@ -34,12 +30,14 @@ function current_posts_block_info() {
 }
 
 /**
- * Implements hook_block_view()
+ * Implements hook_block_view().
  */
 function current_posts_block_view($delta = '') {
   switch ($delta) {
     case 'current_posts':
       $block['subject'] = t('Current Posts');
+
+      // Permission/Security check.
       if (user_access('access content')) {
         $result = current_posts_contents();
         $items = array();
@@ -47,19 +45,21 @@ function current_posts_block_view($delta = '') {
           $items[] = array(
             'data' => l($node->title, 'node/' . $node->nid),
           );
-          
+
           if (empty($items)) {
             $block['content'] = t('No posts available.');
-          } 
+          }
           else {
-             $block['content'] = theme('item_list', array(
-               'items' => $items));
+            $block['content'] = theme('item_list', array(
+              'items' => $items,
+            ));
           }
         }
       }
       return $block;
-      break;
-   }
+
+    break;
+  }
 }
 
 /**
@@ -67,25 +67,18 @@ function current_posts_block_view($delta = '') {
  *
  * Set beginning and end dates, retrieve posts from database
  * saved in that time period.
- *
- * @return
- *  A result set of the targeted posts.
  */
 function current_posts_contents() {
   $today = getdate();
   $start_time = mktime(0, 0, 0, $today['mon'], ($today['mday'] - 7), $today['year']);
   $end_time = time();
-  
+
   $query = db_select('node', 'n')
     ->fields('n', array('nid', 'title', 'created'))
     ->condition('status', 1)
     ->condition('created', array($start_time, $end_time), 'BETWEEN')
     ->orderBy('created', 'DESC')
     ->execute();
+
   return $query;
 }
-
-
-  
-  
-  
