@@ -1,25 +1,39 @@
 <?php
 /**
  * @file
- * Install file for JDT Core
+ * Install file for JDT Core.
  */
- 
+
 /**
- * Enables Common Modules
+ * Enables Common Modules.
  */
 function jdt_core_update_7000() {
-  $enabled_modules = array('views', 'features', 'strongarm', 'context', 'pathauto', 'diff', 'libraries', 'jquery_update', 'devel', 'module_filter', 'admin_menu');
+  // Enable the common modules from Task #1.
+  $enabled_modules = array(
+    'views',
+    'features',
+    'strongarm',
+    'context',
+    'pathauto',
+    'diff',
+    'libraries',
+    'jquery_update',
+    'devel',
+    'module_filter',
+    'admin_menu',
+  );
   module_enable($enabled_modules);
-  
+
+  // Enable the custom module I created as a learning experience.
   $custom_module = array('current_posts');
   module_enable($custom_module);
-  
+
+  // Update current_posts module to display a block.
   db_update('block')
     ->fields(array(
       'region' => 'content',
-      )
     )
-    ->condition('module', 'system')
-    ->condition('delta', 'current_posts')
+    )
+    ->condition('module', 'current_posts')
     ->execute();
 }
