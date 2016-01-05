@@ -23,17 +23,4 @@ function jdt_core_update_7000() {
     'admin_menu',
   );
   module_enable($enabled_modules);
-
-  // Enable the custom module I created as a learning experience.
-  $custom_module = array('current_posts');
-  module_enable($custom_module);
-
-  // Update current_posts module to display a block.
-  db_update('block')
-    ->fields(array(
-      'region' => 'content',
-    )
-    )
-    ->condition('module', 'current_posts')
-    ->execute();
 }
