@@ -53,6 +53,72 @@ class SqlServerSelectTest extends DatabaseTestCase {
     }
 
     $this->assertEqual($num_records, 6, t('Returned the correct number of total rows.'));
+    
+    // The driver is also verifying that any expressions/columns used in GROUP BY/ORDER BY
+    // are added to the select list if they are not because SQL Server will complain
+    // about those fields missing in aggregates.
+    $query = db_select('test_task', 't')->distinct();
+    $query->addField('t', 'task');
+    $query->orderBy('t.pid');
+    
+    try {
+      $result = $query->execute();
+    } 
+    catch (\Exception $e) {
+      $this->assert('fail', "Driver failed to deal with missing fields in aggregate: {$e->getMessage()}");
+    }
+    
+    $query = db_select('test_task', 't');
+    $query->addField('t', 'task');
+    $query->orderBy('t.pid');
+    $query->groupBy('t.pid');
+    
+    try {
+      $result = $query->execute();
+    } 
+    catch (\Exception $e) {
+      $this->assert('fail', "Driver failed to deal with missing fields in aggregate: {$e->getMessage()}");
+    }
+  }
+  
+  /**
+   * Test cross join.
+   */
+  public function testCrossJoin() {
+    // SelectQuery in SQL Server driver
+    // is expanding expressions into a cross
+    // join statement. This allows the use
+    // of these expressions in the Aggregate
+    // or Where part of the query.
+    $query = db_select('test_task', 't');
+    // Cast the task to an accent insensitive collation in an expression.
+    $query->addExpression('(t.task collate Latin1_General_CS_AI)', 'ci_task');
+    // Add condition over that expression.
+    $query->where('ci_task = :param', array(':param' => 'slëep'));
+
+    $result = $query->execute();
+    $num_records = 0;
+    foreach ($result as $record) {
+      $num_records++;
+    }
+    $this->assertEqual($num_records, 2, t('Returned the correct number of total rows.'));
+    
+    // There is a special case, if the query is an aggregate
+    // and an expression is used, this expression must be part of the aggregate.
+    $query = db_select('test_task', 't');
+    // Cast the task to an accent insensitive collation in an expression.
+    $query->addExpression('(t.task collate Latin1_General_CS_AI)', 'ci_task');
+    // Add condition over that expression.
+    $query->where('ci_task = :param', array(':param' => 'slëep'));
+    // Add condition over that expression.
+    $query->groupBy('t.task');
+    
+    $result = $query->execute();
+    $num_records = 0;
+    foreach ($result as $record) {
+      $num_records++;
+    }
+    $this->assertEqual($num_records, 1, t('Returned the correct number of total rows.'));
   }
 
   /**
@@ -88,7 +154,6 @@ class SqlServerSelectTest extends DatabaseTestCase {
     $query->addExpression('COUNT(task)', 'num');
     $query->where('t.task IN (:data0, :data0)', array(':data0' => 'sleep'));
     $result = NULL;
-    // If > 2100 we can get SQL Exception! The driver must handle that.
     try {
       $result = $query->execute()->fetchField();
     } 
@@ -112,7 +177,7 @@ class SqlServerSelectTest extends DatabaseTestCase {
       // The regular expandArguments implementation will fail to
       // properly expand the associative array with weird keys, OH, and actually
       // you can perform some SQL Injection through the array keys.
-      $result = db_query('SELECT COUNT(*) FROM USERS WHERE USERS.UID IN (:nids)', $params)->execute()->fetchField();
+      $result = db_query('SELECT COUNT(*) FROM USERS WHERE USERS.UID IN (:nids)', $params)->fetchField();
     } 
     catch (\Exception $err) {
       // Regular drupal will fail with
@@ -125,6 +190,37 @@ class SqlServerSelectTest extends DatabaseTestCase {
   }
   
   /**
+   * Test the temporary table functionality.
+   */
+  public function testTemporaryTables() {
+    
+    $query = db_select('test_task', 't');
+    $query->fields('t');
+  
+    $table = db_query_temporary((string) $query);
+    
+    // First assert that the table exists
+    $this->assertTRUE(db_table_exists($table), 'The temporary table exists.');
+    
+    $query2 = db_select($table, 't');
+    $query2->fields('t');
+    
+    // Now make sure that both tables are exactly the same.
+    $data1 = $query->execute()->fetchAllAssoc('tid');
+    $data2 = $query2->execute()->fetchAllAssoc('tid');
+
+    // User ID's are negative, so this should return 0 matches.
+    $this->assertEqual(count($data1), count($data2), 'Temporary table has the same number of rows.');
+    // $this->assertEqual(count($data1[0]), count($data2[0]), 'Temporary table has the same number of columns.');
+    
+    // Drop the table.
+    db_drop_table($table);
+    
+    // The table should not exist now.
+    $this->assertFALSE(db_table_exists($table), 'The temporary table does not exists.');
+  }
+  
+  /**
    * Test LIKE statement wildcards are properly escaped.
    */
   public function testEscapeLike() {
@@ -133,7 +229,7 @@ class SqlServerSelectTest extends DatabaseTestCase {
     $expected = 't[[]e[%]s[]]t[_]\\';
     $actual = db_like($string);
     $this->assertEqual($actual, $expected, 'Properly escaped LIKE statement wildcards.');
- 
+
     db_insert('test_task')
       ->fields(array(
         'task' => 'T\\est',

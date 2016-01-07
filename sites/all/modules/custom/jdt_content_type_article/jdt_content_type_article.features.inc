@@ -17,6 +17,30 @@ function jdt_content_type_article_ctools_plugin_api($module = NULL, $api = NULL)
 }
 
 /**
+ * Implements hook_image_default_styles().
+ */
+function jdt_content_type_article_image_default_styles() {
+  $styles = array();
+
+  // Exported image style: jdt_custom.
+  $styles['jdt_custom'] = array(
+    'label' => 'jdt_custom',
+    'effects' => array(
+      2 => array(
+        'name' => 'image_resize',
+        'data' => array(
+          'width' => 200,
+          'height' => 200,
+        ),
+        'weight' => 2,
+      ),
+    ),
+  );
+
+  return $styles;
+}
+
+/**
  * Implements hook_node_info().
  */
 function jdt_content_type_article_node_info() {
