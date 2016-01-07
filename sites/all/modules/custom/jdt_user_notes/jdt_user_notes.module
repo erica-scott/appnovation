@@ -4,4 +4,26 @@
  * JDT User Notes Module File.
  */
 
+/**
+ * Implements hook_permission() for jdt_user_notes().
+ *
+ * Controls permissions.
+ */
+function jdt_user_notes_permission() {
+  $permissions = array(
+    'creating notes' => array(
+      'title' => t('Add a Note'),
+    ),
+    'reading notes' => array(
+      'title' => t('Read a Note'),
+    ),
+    'updating notes' => array(
+      'title' => t('Edit a Note'),
+    ),
+    'deleting notes' => array(
+      'title' => t('Delete a Note'),
+    ),
+  );
 
+  return $permissions;
+}
