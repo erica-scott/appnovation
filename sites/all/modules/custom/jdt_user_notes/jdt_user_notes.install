@@ -35,3 +35,28 @@ function jdt_user_notes_schema() {
 
   return $schema;
 }
+
+/**
+ * Implements hook_permission() for jdt_user_notes().
+ *
+ * Controls permissions.
+ */
+function jdt_user_notes_permission() {
+  $permissions = array(
+    'adding notes' => array(
+      'title' => t('Add a Note'),
+    ),
+    'deleting_notes' => array(
+      'title' => t('Delete a Note'),
+    ),
+    'editing_notes' => array(
+      'title' => t('Edit a Note'),
+    ),
+    'reading_notes' => array(
+      'title' => t('Read a Note'),
+    ),
+  );
+
+  return $permissions;
+}
+
