@@ -24,79 +24,105 @@ class JDTUserNotesDBTest extends DrupalWebTestCase {
 	public function setUp() {
 		parent::setUp(array('jdt_user_notes'));
 
-		$this->priviledged_user = $this->drupalCreateUser();
+		$this->priviledged_user = $this->drupalCreateUser(array(
+			'creating notes',
+			'reading notes',
+			'updating notes',
+			'deleting notes',
+		));
 		
 		$this->drupalLogin($this->priviledged_user);
 	}
 
-	public function testjdt_user_notes_dbselect() {
-		require_once('jdt_user_notes_db_manip.php');
-
-		//Insert a field, so there is something to find
-		$fields = array(
-			'article_nid' => 0,
-			'author_uid' => 0,
-			'note_text' => 'Blah blah blah',
-			);
-		$options = array();
-		jdt_user_notes_dbinsert($fields, $options);
-
-		$fields = 'j';
-		$conditions = array();
-		$options = array();
-		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
-		$message = 'Select should return all of the data for all of the notes';
-
-		$this->assertTrue($result, $message);
-
-		$fields = array('article_nid');
-		$conditions = array();
-		$options = array();
-		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
-		$message = 'Select should return the article_nid for all of the notes';
-
-		$this->assertTrue($result, $message);
-
-		$fields = 'j';
-		$conditions = array(
-			'article_nid = 0' => array(
-				'arg1' => 'article_nid',
-				'arg2' => 0,
-				'relationship' => '=',
-				));
-		$options = array();
-		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
-		$message = 'Select should only return line where article_nid = 0';
-
-		$this->assertTrue($result, $message);
-
-		$fields = 'j';
-		$conditions = array(
-			'article_nid = 1' => array(
-				'arg1' => 'article_nid',
-				'arg2' => 1,
-				'relationship' => '=',
-				));
-		$options = array();
-		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
-		$message = 'Select should fail because there are no fields where article_nid = 1';
-
-		$this->assertFalse($result, $message);
-	}
-
-	public function testjdt_user_notes_dbinsert() {
-		require_once('jdt_user_notes_db_manip.php');
+	/**
+	 *
+	 */
+	public function test_jdt_user_notes_create() {
+		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
 
 		$fields = array(
 			'article_nid' => 0,
 			'author_uid' => 0,
 			'note_text' => 'Blah blah blah',
-			);
-		$options = array();
-		$result = jdt_user_notes_dbinsert($fields, $options);
-		$message = 'Insert should be succesful';
-
+		);
+		$result = create($fields);
+		$message = 'Should create one new note, and return true: ' . $result;
 		$this->assertTrue($result, $message);
 	}
 
+	/**
+	 *
+	 */
+	public function test_jdt_user_notes_read() {
+		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'Blah blah blah',
+		);
+		$res = create($fields);
+		$note_id = dpm($res);
+
+		$result = read($note_id);
+
+		if (is_array($result) && sizeof($result) == 1) {
+			$arr_result = TRUE;
+		}
+		else {
+			$arr_result = FALSE;
+		}
+		$message = 'Result should be an array of size 1';
+		$this->assertTrue($arr_result, $message);
+
+		$this->assertEqual($result[0]['article_nid'], 0);
+
+		$this->assertEqual($result[0]['author_uid'], 0);
+
+		$this->assertEqual($result[0]['note_text'], 'Blah blah blah');
+
+	}
+
+	/**
+	 *
+	 */
+	public function test_jdt_user_notes_update() {
+		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'Blah blah blah',
+		);
+		$res = create($fields);
+		$note_id = dpm($res);
+
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'New text!',
+		);
+		$result = update($note_id, $fields);
+		$message = 'Should succesfully update the note of id: ' . $note_id . ' Result: ' . $result;
+		$this->assertTrue($result, $message);
+	}
+
+	/**
+	 *
+	 */
+	public function test_jdt_user_notes_delete() {
+		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'Blah blah blah',
+		);
+		$res = create($fields);
+		$note_id = dpm($res);
+
+		$result = delete($note_id);
+		$message = 'Should succesfully delete the note of id: ' . $note_id . ' Result: ' . $result;
+		$this->assertTrue($result, $message);
+	}
 }
