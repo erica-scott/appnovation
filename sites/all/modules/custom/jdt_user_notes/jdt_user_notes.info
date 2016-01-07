@@ -1,0 +1,5 @@
+name = JDT User Notes
+description = Allows users to add notes to an article
+core = 7.x
+version = 7.x-1.0
+files[] = jdt_user_notes.test

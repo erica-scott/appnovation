@@ -1,0 +1,102 @@
+<?php
+/**
+ * Tests the functionality of JDT User Notes DB file.
+ */
+class JDTUserNotesDBTest extends DrupalWebTestCase {
+	protected $priviledged_user;
+
+	/**
+	 * Provides the user interface information.
+	 */
+	public static function getInfo() {
+		$info = array(
+			'name' => 'JDT User Notes DB Test',
+			'description' => 'Asserts that JDT User Notes DB methods work properly',
+			'group' => 'JDT User Notes',
+		);
+
+		return $info;
+	}
+
+	/**
+	 * Sets up the proper environment needed to run tests
+	 */
+	public function setUp() {
+		parent::setUp(array('jdt_user_notes'));
+
+		$this->priviledged_user = $this->drupalCreateUser();
+		
+		$this->drupalLogin($this->priviledged_user);
+	}
+
+	public function testjdt_user_notes_dbselect() {
+		require_once('jdt_user_notes_db_manip.php');
+
+		//Insert a field, so there is something to find
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'Blah blah blah',
+			);
+		$options = array();
+		jdt_user_notes_dbinsert($fields, $options);
+
+		$fields = 'j';
+		$conditions = array();
+		$options = array();
+		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
+		$message = 'Select should return all of the data for all of the notes';
+
+		$this->assertTrue($result, $message);
+
+		$fields = array('article_nid');
+		$conditions = array();
+		$options = array();
+		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
+		$message = 'Select should return the article_nid for all of the notes';
+
+		$this->assertTrue($result, $message);
+
+		$fields = 'j';
+		$conditions = array(
+			'article_nid = 0' => array(
+				'arg1' => 'article_nid',
+				'arg2' => 0,
+				'relationship' => '=',
+				));
+		$options = array();
+		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
+		$message = 'Select should only return line where article_nid = 0';
+
+		$this->assertTrue($result, $message);
+
+		$fields = 'j';
+		$conditions = array(
+			'article_nid = 1' => array(
+				'arg1' => 'article_nid',
+				'arg2' => 1,
+				'relationship' => '=',
+				));
+		$options = array();
+		$result = jdt_user_notes_dbselect($fields, $conditions, $options);
+		$message = 'Select should fail because there are no fields where article_nid = 1';
+
+		$this->assertFalse($result, $message);
+	}
+
+	public function testjdt_user_notes_dbinsert() {
+		require_once('jdt_user_notes_db_manip.php');
+
+		$fields = array(
+			'article_nid' => 0,
+			'author_uid' => 0,
+			'note_text' => 'Blah blah blah',
+			);
+		$options = array();
+		$result = jdt_user_notes_dbinsert($fields, $options);
+		$message = 'Insert should be succesful';
+
+		$this->assertTrue($result, $message);
+	}
+
+}
