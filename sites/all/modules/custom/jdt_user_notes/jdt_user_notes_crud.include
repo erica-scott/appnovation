@@ -9,7 +9,7 @@
 *
 * Takes array of fields, returns rows affected.
 */
-function create($fields) {
+function jdt_user_notes_create($fields) {
  $table = 'jdt_user_notes';
  $res = db_insert($table)
    ->fields(array(
@@ -27,7 +27,7 @@ function create($fields) {
 *
 * Takes note_id and returns associative array of that row.
 */
-function read($note_id) {
+function jdt_user_notes_read($note_id) {
  $table = 'jdt_user_notes';
  $table_abbr = 'j';
  $res = db_select($table, $table_abbr)
@@ -35,12 +35,7 @@ function read($note_id) {
    ->condition('note_id', $note_id, '=')
    ->execute();
 
- $result = array();
- while ($row = $res->fetchAssoc()) {
-   $result[] = $row;
- }
-
- return $result;
+ return $res->fetchAssoc();
 }
 
 /**
@@ -48,7 +43,7 @@ function read($note_id) {
 *
 * Takes note_id and the fields to update, and returns rows affected.
 */
-function update($note_id, $fields) {
+function jdt_user_notes_update($note_id, $fields) {
  $table = 'jdt_user_notes';
  $res = db_update($table)
    ->fields(array(
@@ -67,7 +62,7 @@ function update($note_id, $fields) {
 * 
 * Takes the id of the note to be deleted, and returns rows affected.
 */
-function delete($note_id) {
+function jdt_user_notes_delete($note_id) {
  $table = 'jdt_user_notes';
  $res = db_delete($table)
    ->condition('note_id', $note_id, '=')

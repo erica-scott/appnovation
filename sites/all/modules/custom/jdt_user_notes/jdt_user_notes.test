@@ -1,130 +1,144 @@
 <?php
 /**
- * Tests the functionality of JDT User Notes DB file.
+ * @file
+ * Test file for jdt_user_notes.
  */
-class JDTUserNotesDBTest extends DrupalWebTestCase {
-	protected $priviledged_user;
 
-	/**
-	 * Provides the user interface information.
-	 */
-	public static function getInfo() {
-		$info = array(
-			'name' => 'JDT User Notes DB Test',
-			'description' => 'Asserts that JDT User Notes DB methods work properly',
-			'group' => 'JDT User Notes',
-		);
+include_once('jdt_user_notes_crud.include');
 
-		return $info;
-	}
+/**
+ * Class to test CRUD file.
+ */
+class JDTUserNotesCRUDTest extends DrupalWebTestCase {
+  protected $priviledgedUser;
 
-	/**
-	 * Sets up the proper environment needed to run tests
-	 */
-	public function setUp() {
-		parent::setUp(array('jdt_user_notes'));
+  /**
+   * Provides the user interface information.
+   */
+  public static function getInfo() {
+    $info = array(
+      'name' => 'JDT User Notes CRUD Test',
+      'description' => 'Asserts that JDT User Notes CRUD methods work properly',
+      'group' => 'JDT User Notes',
+    );
 
-		$this->priviledged_user = $this->drupalCreateUser(array(
- 				'creating notes',
- 				'reading notes',
- 				'updating notes',
- 				'deleting notes',
- 		));
-		
-		$this->drupalLogin($this->priviledged_user);
-	}
+    return $info;
+  }
 
-	/**
-	 * Tests CRUD Create function.
-	 */
-	public function test_jdt_user_notes_create() {
-		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+  /**
+   * Sets up the proper environment needed to run tests.
+   */
+  public function setUp() {
+    parent::setUp(array('jdt_user_notes'));
+  }
 
-		$fields = array(
-	  			'article_nid' => 0,
-	  			'author_uid' => 0,
-	  			'note_text' => 'Blah blah blah',
-	  );
-		
-		$result = create($fields);
-	 	$message = 'Should create one new note, and return true: ' . $result;
-	 	$this->assertTrue($result, $message);
-	}
+  /**
+   * Tests CRUD Create function.
+   */
+  public function testJdtUserNotesCreate() {
+    $fields = array(
+      'article_nid' => 0,
+      'author_uid' => 0,
+      'note_text' => 'Blah blah blah',
+    );
 
-	/**
-	 * Tests the CRUD Read function.
-	 */
-	public function test_jdt_user_notes_read() {
-		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+    $note_id = jdt_user_notes_create($fields);
 
-		$fields = array(
-	 		'article_nid' => 0,
-	 		'author_uid' => 0,
-	 		'note_text' => 'Blah blah blah',
-	 	);
-	 	$res = create($fields);
-	 	$note_id = dpm($res);
+    if ($this->assertNotNull($note_id, 
+    	'If insert is success, should not return null')) {
+	    $check = db_select('jdt_user_notes', 'j')
+	    	->fields('j')
+	    	->condition('note_id', $note_id, '=')
+	    	->execute()
+	    	->fetchAssoc();
 
-	 	$result = read($note_id);
+	    $this->assertEqual($check['article_nid'], 0);
+	    $this->assertEqual($check['author_uid'], 0);
+	    $this->assertEqual($check['note_text'], 'Blah blah blah');
+  	}
+  }
 
-	 	if (is_array($result) && sizeof($result) == 1) {
-	 		$arr_result = TRUE;
-	 	}
-	 	else {
-	 		$arr_result = FALSE;
-	 	}
+  /**
+   * Tests the CRUD Read function.
+   */
+  public function testJdtUserNotesRead() {
+    $note_id = db_insert('jdt_user_notes')
+    	->fields(array(
+    		'article_nid' => 0,
+    		'author_uid' => 0,
+    		'note_text' => 'Blah blah blah',
+    	))
+    	->execute();
 
-	 	$message = 'Result should be an array of size 1';
-	 	$this->assertTrue($arr_result, $message);
+    $return = jdt_user_notes_read($note_id);
 
-	 	$this->assertEqual($result[0]['article_nid'], 0);
+    $found = empty($return);
 
-	 	$this->assertEqual($result[0]['author_uid'], 0);
+    if ($this->assertFalse($found, 'Should return false because the select
+     should not return an empty array')) {
+    	$this->assertEqual($return['article_nid'], 0);
+    	$this->assertEqual($return['author_uid'], 0);
+    	$this->assertEqual($return['note_text'], 'Blah blah blah');
+    }
+  }
 
-	 	$this->assertEqual($result[0]['note_text'], 'Blah blah blah');
-	}
+  /**
+   * Tests the CRUD Update function.
+   */
+  public function testJdtUserNotesUpdate() {
+    $note_id = db_insert('jdt_user_notes')
+    	->fields(array(
+    		'article_nid' => 0,
+    		'author_uid' => 0,
+    		'note_text' => 'Blah blah blah',
+    	))
+    	->execute();
 
-	/**
-	 * Tests the CRUD Update function.
-	 */
-	public function test_jdt_user_notes_update() {
-		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+    $new_fields = array(
+    	'article_nid' => 1,
+    	'author_uid' => 0,
+    	'note_text' => 'This is the changed text!',
+    );
+    $result = jdt_user_notes_update($note_id, $new_fields);
 
-		$fields = array(
-	  	'article_nid' => 0,
-	  	'author_uid' => 0,
-	  	'note_text' => 'Blah blah blah',
-	  );
+    if ($this->assertEqual($result, 1, 'Rows affected should = 1')) {
+    	$check = db_select('jdt_user_notes', 'j')
+	    	->fields('j')
+	    	->condition('note_id', $note_id, '=')
+	    	->execute()
+	    	->fetchAssoc();
 
-	  $res = create($fields);
-	  $note_id = dpm($res);
+	    $this->assertEqual($check['article_nid'], 1);
+	    $this->assertEqual($check['author_uid'], 0);
+	    $this->assertEqual($check['note_text'], 'This is the changed text!');
+    }
+  }
 
-	  $fields = array(
-	 		'article_nid' => 0,
-	 		'author_uid' => 0,
-	 		'note_text' => 'New text!',
-	 	);
-	 	$result = update($note_id, $fields);
-	 	$message = 'Should succesfully update the note of id: ' . $note_id . ' Result: ' . $result;
-	  $this->assertTrue($result, $message);
-	}
+  /**
+   * Tests the CRUD Delete function.
+   */
+  public function testJdtUserNotesDelete() {
+    $note_id = db_insert('jdt_user_notes')
+    	->fields(array(
+    		'article_nid' => 0,
+    		'author_uid' => 0,
+    		'note_text' => 'Blah blah blah',
+    	))
+    	->execute();
 
-	/**
-	 * Tests the CRUD Delete function.
-	 */
-	public function test_jdt_user_notes_delete() {
-		module_load_include('php', 'jdt_user_notes', 'jdt_user_notes_crud');
+    $result = jdt_user_notes_delete($note_id);
 
-		$fields = array(
-	 		'article_nid' => 0,
-	 		'author_uid' => 0,
-	 		'note_text' => 'Blah blah blah',
-	 	);
-	 	$res = create($fields);
-	 	$note_id = dpm($res);
-	 
-	 	$result = delete($note_id);
-	 	$message = 'Should succesfully delete the note of id: ' . $note_id . ' Result: ' . $result;
-	 	$this->assertTrue($result, $message);
-	}
+    if ($this->assertEqual($result, 1, 'Rows affected should = 1')) {
+    	$check = db_select('jdt_user_notes', 'j')
+	    	->fields('j')
+	    	->condition('note_id', $note_id, '=')
+	    	->execute()
+	    	->fetchAssoc();
+
+	    $found = empty($check);
+	    $this->assertTrue($found, 'This select should return nothing, because
+	     the note has been deleted');
+    }
+  }
+
 }

@@ -1,0 +1,13 @@
+name = Custom Image Size/Date Format
+description = Created custom image size and date format for jdt_content_type_article view
+core = 7.x
+package = Features
+version = 7.x-2.0
+dependencies[] = ctools
+dependencies[] = image
+dependencies[] = strongarm
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:2
+features[image][] = jdt_custom
+features[variable][] = date_format_jdt_custom
+project path = sites/all/modules/custom

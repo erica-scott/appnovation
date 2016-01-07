@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Custom Image Size/Date Format feature.
+ */
+
+include_once 'custom_image_size_date_format.features.inc';
