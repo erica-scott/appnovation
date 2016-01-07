@@ -1,0 +1,37 @@
+<?php
+/**
+ * @file
+ * JDT User Notes Install File.
+ */
+
+/**
+ * Implements hook_schema() for jdt_user_notes().
+ *
+ * Creates a custom table.
+ */
+function jdt_user_notes_schema() {
+  $schema['jdt_user_notes'] = array(
+    'fields' => array(
+      'note_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'article_nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'author_uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'note_text' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 255,
+      ),
+    ),
+    'primary key' => array('note_id'),
+  );
+
+  return $schema;
+}

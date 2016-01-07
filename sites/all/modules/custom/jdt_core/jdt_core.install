@@ -1,0 +1,56 @@
+<?php
+/**
+ * @file
+ * Install file for JDT Core.
+ */
+
+/**
+ * Enables Common Modules.
+ */
+function jdt_core_update_7001() {
+  // Enable the common modules from Task #1.
+  $enabled_modules = array(
+    'views',
+    'features',
+    'strongarm',
+    'context',
+    'pathauto',
+    'diff',
+    'libraries',
+    'jquery_update',
+    'devel',
+    'module_filter',
+    'admin_menu',
+  );
+  module_enable($enabled_modules);
+}
+
+/**
+ * Disables the messages from Acquia.
+ */
+function jdt_core_update_7003() {
+  module_disable(array('acquia_spi', 'acquia_agent'));
+}
+
+/**
+ * Disables the modules as specified from Task 1
+ */
+function jdt_core_update_7004() {
+  module_disable(array('toolbar', 'shortcut', 'overlay'));
+}
+
+/**
+ * Enables my custom module.
+ */
+function jdt_core_update_7005() {
+  module_enable(array('current_posts'));
+}
+
+/**
+ * Enables the feature jdt_content_type_article.
+ */
+function jdt_core_update_7008() {
+  $feature = array('jdt_content_type_article');
+  
+  module_enable($feature);
+}
