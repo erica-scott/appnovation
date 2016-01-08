@@ -5,6 +5,11 @@
  */
 
 /**
+ * Include CRUD file.
+ */
+include_once 'jdt_user_notes.crud.inc';
+
+/**
  * Implements hook_permission() for jdt_user_notes().
  *
  * Controls permissions.
@@ -27,3 +32,146 @@ function jdt_user_notes_permission() {
 
   return $permissions;
 }
+
+/**
+ * Implements hook_menu() for jdt_user_notes().
+ */
+function jdt_user_notes_menu() {
+  $items = array();
+  
+  // These are something that will come from clicking a button/etc.
+  $article_nid = "0";
+  $note_id = "4";
+
+  $items['jdt_user_notes/add'] = array(
+    'title' => 'Add a Note',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jdt_user_notes_add', trim($article_nid, '"')),
+    'access arguments' => array('creating notes'),
+    'description' => 'Add a Note',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['jdt_user_notes/edit'] = array(
+    'title' => 'Edit a Note',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jdt_user_notes_edit', trim($note_id, '"')),
+    'access arguments' => array('updating notes'),
+    'description' => 'Edit a Note',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Custom form for adding notes.
+ */
+function jdt_user_notes_add($form, &$form_state, $article_nid) {
+  $form['note_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+  );
+
+  $form['note_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+  );
+
+  $form['article_nid'] = array(
+    '#type' => 'hidden',
+    '#value' => $article_nid,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submits data from jdt_user_notes_add().
+ */
+function jdt_user_notes_add_submit($form, &$form_state) {
+  global $user;
+
+  $fields = array(
+    'article_nid' => $form_state['values']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['values']['note_title'],
+    'note_text' => $form_state['values']['note_body'],
+  );
+
+  $result = jdt_user_notes_create($fields);
+
+  if ($result != NULL) {
+    drupal_set_message(t('This note has been succesfully created!'));
+  }
+  else {
+    drupal_set_message(t('AN ERROR HAS OCCURRED'));
+  }
+}
+
+/**
+ * Custom form for editing notes.
+ */
+function jdt_user_notes_edit($form, &$form_state, $note_id) {
+  $note = jdt_user_notes_read($note_id);
+
+  $form['note_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#value' => $note['note_title'],
+  );
+
+  $form['note_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+    '#value' => $note['note_text'],
+  );
+
+  $form['article_nid'] = array(
+    '#type' => 'hidden',
+    '#value' => intval($note['article_nid']),
+  );
+
+  $form['note_id'] = array(
+    '#type' => 'hidden',
+    '#value' => intval($note_id),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Edit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submits data from jdt_user_notes_edit().
+ */
+function jdt_user_notes_edit_submit($form, &$form_state) {
+  global $user;
+
+  //dpm($form_state);
+
+  $fields = array(
+    'article_nid' => $form_state['values']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['values']['note_title'],
+    'note_text' => $form_state['values']['note_body'],
+  );
+
+  $note_id = $form_state['values']['note_id'];
+
+  $result = jdt_user_notes_update($note_id, $fields);
+
+  dpm($form_state['values']['note_id']);
+
+  //drupal_set_message(t($result . '<br/><br/> (db_update_placeholder_0 => ' . $form_state['values']['article_nid'] . ', db_update_placeholder_1 => ' . $user->uid . ', db_update_placeholder_2 => ' . $form_state['values']['note_title'] . ', db_update_placeholder_3 => ' . $form_state['values']['note_body'] . ', db_condition_placeholder_0 => ' . $form_state['values']['note_id']));
+
+}
+

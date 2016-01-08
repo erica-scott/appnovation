@@ -24,6 +24,11 @@ function jdt_user_notes_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'note_title' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 255,
+      ),
       'note_text' => array(
         'type' => 'varchar',
         'not null' => TRUE,
@@ -35,3 +40,18 @@ function jdt_user_notes_schema() {
 
   return $schema;
 }
+
+/**
+ * Adds the column note_title to the table jdt_user_notes.
+ */
+function jdt_user_notes_update_7000() {
+  $spec = array(
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => TRUE,
+    'default' => '',
+  );
+
+  db_add_field('jdt_user_notes', 'note_title', $spec);
+}
+
