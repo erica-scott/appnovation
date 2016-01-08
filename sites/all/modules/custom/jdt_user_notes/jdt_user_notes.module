@@ -46,7 +46,7 @@ function jdt_user_notes_menu() {
   $items['jdt_user_notes/add'] = array(
     'title' => 'Add a Note',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('jdt_user_notes_add', trim($article_nid, '"')),
+    'page arguments' => array('jdt_user_notes_add', $article_nid),
     'access arguments' => array('creating notes'),
     'description' => 'Add a Note',
     'type' => MENU_CALLBACK,
@@ -55,7 +55,7 @@ function jdt_user_notes_menu() {
   $items['jdt_user_notes/edit'] = array(
     'title' => 'Edit a Note',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('jdt_user_notes_edit', trim($note_id, '"')),
+    'page arguments' => array('jdt_user_notes_edit', $note_id),
     'access arguments' => array('updating notes'),
     'description' => 'Edit a Note',
     'type' => MENU_CALLBACK,
@@ -100,8 +100,8 @@ function jdt_user_notes_add_submit($form, &$form_state) {
   $fields = array(
     'article_nid' => $form_state['values']['article_nid'],
     'author_uid' => $user->uid,
-    'note_title' => $form_state['values']['note_title'],
-    'note_text' => $form_state['values']['note_body'],
+    'note_title' => $form_state['input']['note_title'],
+    'note_text' => $form_state['input']['note_body'],
   );
 
   $result = jdt_user_notes_create($fields);
@@ -134,12 +134,12 @@ function jdt_user_notes_edit($form, &$form_state, $note_id) {
 
   $form['article_nid'] = array(
     '#type' => 'hidden',
-    '#value' => intval($note['article_nid']),
+    '#value' => $note['article_nid'],
   );
 
   $form['note_id'] = array(
     '#type' => 'hidden',
-    '#value' => intval($note_id),
+    '#value' => $note_id,
   );
 
   $form['submit'] = array(
@@ -156,22 +156,22 @@ function jdt_user_notes_edit($form, &$form_state, $note_id) {
 function jdt_user_notes_edit_submit($form, &$form_state) {
   global $user;
 
-  //dpm($form_state);
-
   $fields = array(
-    'article_nid' => $form_state['values']['article_nid'],
-    'author_uid' => $user->uid,
-    'note_title' => $form_state['values']['note_title'],
-    'note_text' => $form_state['values']['note_body'],
+    'article_nid' => intval($form_state['values']['article_nid']),
+    'author_uid' => intval($user->uid),
+    'note_title' => $form_state['input']['note_title'],
+    'note_text' => $form_state['input']['note_body'],
   );
 
-  $note_id = $form_state['values']['note_id'];
+  $note_id = intval($form_state['values']['note_id']);
 
   $result = jdt_user_notes_update($note_id, $fields);
 
-  dpm($form_state['values']['note_id']);
-
-  //drupal_set_message(t($result . '<br/><br/> (db_update_placeholder_0 => ' . $form_state['values']['article_nid'] . ', db_update_placeholder_1 => ' . $user->uid . ', db_update_placeholder_2 => ' . $form_state['values']['note_title'] . ', db_update_placeholder_3 => ' . $form_state['values']['note_body'] . ', db_condition_placeholder_0 => ' . $form_state['values']['note_id']));
-
+  if($result == 0) {
+    drupal_set_message(t('This note has not been editted.'));
+  } 
+  else {
+    drupal_set_message(t('This note has been succesfully editted!'));
+  }
 }
 
