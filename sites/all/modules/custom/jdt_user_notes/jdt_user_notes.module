@@ -38,56 +38,30 @@ function jdt_user_notes_permission() {
  */
 function jdt_user_notes_menu() {
   $items = array();
-  
-  // These are something that will come from clicking a button/etc.
-  $article_nid = "0";
-  $note_id = "4";
 
-  $items['jdt_user_notes/add'] = array(
+  $items['jdt_user_notes/add/%'] = array(
     'title' => 'Add a Note',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('jdt_user_notes_add', $article_nid),
+    'page callback' => 'jdt_user_notes_add',
+    'page arguments' => array(2),
     'access arguments' => array('creating notes'),
-    'description' => 'Add a Note',
-    'type' => MENU_CALLBACK,
   );
 
-  $items['jdt_user_notes/edit'] = array(
+  $items['jdt_user_notes/edit/%/%'] = array(
     'title' => 'Edit a Note',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('jdt_user_notes_edit', $note_id),
+    'page callback' => 'jdt_user_notes_edit',
+    'page arguments' => array(2, 3),
     'access arguments' => array('updating notes'),
-    'description' => 'Edit a Note',
-    'type' => MENU_CALLBACK,
   );
 
   return $items;
 }
 
 /**
- * Custom form for adding notes.
+ * Custom handler for jdt_user_notes_add_form().
  */
-function jdt_user_notes_add($form, &$form_state, $article_nid) {
-  $form['note_title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-  );
-
-  $form['note_body'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Body'),
-  );
-
-  $form['article_nid'] = array(
-    '#type' => 'hidden',
-    '#value' => $article_nid,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Create'),
-  );
-
+function jdt_user_notes_add($article_nid) {
+  $note_id = '';
+  $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
   return $form;
 }
 
@@ -115,38 +89,10 @@ function jdt_user_notes_add_submit($form, &$form_state) {
 }
 
 /**
- * Custom form for editing notes.
+ * Custom handler for jdt_user_notes_edit_form().
  */
-function jdt_user_notes_edit($form, &$form_state, $note_id) {
-  $note = jdt_user_notes_read($note_id);
-
-  $form['note_title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#value' => $note['note_title'],
-  );
-
-  $form['note_body'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Body'),
-    '#value' => $note['note_text'],
-  );
-
-  $form['article_nid'] = array(
-    '#type' => 'hidden',
-    '#value' => $note['article_nid'],
-  );
-
-  $form['note_id'] = array(
-    '#type' => 'hidden',
-    '#value' => $note_id,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Edit'),
-  );
-
+function jdt_user_notes_edit($note_id, $article_nid) {
+  $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
   return $form;
 }
 
@@ -167,11 +113,55 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
 
   $result = jdt_user_notes_update($note_id, $fields);
 
-  if($result == 0) {
+  if ($result == 0) {
     drupal_set_message(t('This note has not been editted.'));
-  } 
+  }
   else {
     drupal_set_message(t('This note has been succesfully editted!'));
   }
 }
 
+/**
+ * Custom form.
+ */
+function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
+  if ($note_id != '') {
+    $note = jdt_user_notes_read($note_id);
+  }
+
+  $form['note_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#value' => isset($note['note_title']) ? $note['note_title'] : '',
+  );
+
+  $form['note_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+    '#value' => isset($note['note_text']) ? $note['note_text'] : '',
+  );
+
+  $form['article_nid'] = array(
+    '#type' => 'hidden',
+    '#value' => $article_nid,
+  );
+
+  $form['note_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $note_id,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => isset($note) ? t('Edit') : t('Create'),
+  );
+
+  if (isset($note)) {
+    $form['#submit'][] = 'jdt_user_notes_edit_submit';
+  }
+  else {
+    $form['#submit'][] = 'jdt_user_notes_add_submit';
+  }
+
+  return $form;
+}
