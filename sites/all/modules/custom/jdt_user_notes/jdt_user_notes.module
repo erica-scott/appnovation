@@ -60,7 +60,7 @@ function jdt_user_notes_menu() {
  * Custom handler for jdt_user_notes_add().
  */
 function jdt_user_notes_add($article_nid) {
-  $note_id = '';
+  $note_id = NULL;
   $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
   return $form;
 }
@@ -71,31 +71,20 @@ function jdt_user_notes_add($article_nid) {
 function jdt_user_notes_add_submit($form, &$form_state) {
   global $user;
 
-  if (strlen($form_state['input']['note_title']) >= 255) {
-    drupal_set_message(t('Error: The note title is longer than 255 characters. 
-      Please try again.'));
-  }
-  elseif (strlen($form_state['input']['note_body']) >= 255) {
-    drupal_set_message(t('Error: The note body is longer than 255 characters. 
-      Please try again.'));
+  $fields = array(
+    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['input']['note_title'],
+    'note_text' => $form_state['input']['note_body'],
+  );
+
+  $result = jdt_user_notes_create($fields);
+
+  if ($result == NULL) {
+    drupal_set_message(t('There was an error creating this note.'), 'error');
   }
   else {
-    $fields = array(
-      'article_nid' => $form_state['temporary']['article_nid'],
-      'author_uid' => $user->uid,
-      'note_title' => $form_state['input']['note_title'],
-      'note_text' => $form_state['input']['note_body'],
-    );
-
-    $result = jdt_user_notes_create($fields);
-
-    if ($result == NULL) {
-      drupal_set_message(t('There was an error creating this note. 
-        Please try again.'));
-    }
-    else {
-      drupal_set_message(t('This note has been succesfully created!'));
-    }
+    drupal_set_message(t('This note has been succesfully created!'));
   }
 }
 
@@ -103,10 +92,10 @@ function jdt_user_notes_add_submit($form, &$form_state) {
  * Custom handler for jdt_user_notes_edit().
  */
 function jdt_user_notes_edit($note_id, $article_nid) {
-  $check = jdt_user_notes_read($note_id);
+  $existing_note = jdt_user_notes_read($note_id);
 
-  if (empty($check) || $check['article_nid'] != $article_nid) {
-    $message = 'This article note does not exist!';
+  if (empty($existing_note) || $existing_note['article_nid'] != $article_nid) {
+    $message = 'This article note does not exist.';
     $form = drupal_get_form('jdt_user_notes_error_form', $message);
   }
   else {
@@ -122,32 +111,22 @@ function jdt_user_notes_edit($note_id, $article_nid) {
 function jdt_user_notes_edit_submit($form, &$form_state) {
   global $user;
 
-  if (strlen($form_state['input']['note_title']) >= 255) {
-    drupal_set_message(t('Error: The note title is longer than 255 characters. 
-      Please try again.'));
-  }
-  elseif (strlen($form_state['input']['note_body']) >= 255) {
-    drupal_set_message(t('Error: The note body is longer than 255 characters. 
-      Please try again.'));
+  $fields = array(
+    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['input']['note_title'],
+    'note_text' => $form_state['input']['note_body'],
+  );
+
+  $note_id = intval($form_state['build_info']['args']['note_id']);
+
+  $result = jdt_user_notes_update($note_id, $fields);
+
+  if ($result === 0) {
+    drupal_set_message(t('There was an error editting this note.'), 'error');
   }
   else {
-    $fields = array(
-      'article_nid' => $form_state['temporary']['article_nid'],
-      'author_uid' => $user->uid,
-      'note_title' => $form_state['input']['note_title'],
-      'note_text' => $form_state['input']['note_body'],
-    );
-
-    $note_id = intval($form_state['temporary']['note_id']);
-
-    $result = jdt_user_notes_update($note_id, $fields);
-
-    if ($result === 0) {
-      drupal_set_message(t('This note has not been editted.'));
-    }
-    else {
-      drupal_set_message(t('This note has been succesfully editted!'));
-    }
+    drupal_set_message(t('This note has been succesfully editted!'));
   }
 }
 
@@ -164,17 +143,19 @@ function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
     '#type' => 'textfield',
     '#title' => t('Title'),
     '#value' => isset($note['note_title']) ? $note['note_title'] : '',
+    '#maxlength' => 254,
   );
 
   $form['note_body'] = array(
     '#type' => 'textarea',
     '#title' => t('Body'),
     '#value' => isset($note['note_text']) ? $note['note_text'] : '',
+    '#attributes' => array('maxlength' => 254),
   );
 
-  $form_state['temporary']['article_nid'] = $article_nid;
+  $form_state['build_info']['args']['article_nid'] = $article_nid;
 
-  $form_state['temporary']['note_id'] = $note_id;
+  $form_state['build_info']['args']['note_id'] = $note_id;
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -192,12 +173,10 @@ function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
 }
 
 /**
- * Custom form for any error that occurs, so we dont' display other form.
+ * Custom form for any error that occurs.
  */
 function jdt_user_notes_error_form($form, &$form_state, $message) {
-  $form['body'] = array(
-    '#markup' => t($message),
-  );
+  drupal_set_message(t($message), 'error');
 
   return $form;
 }
