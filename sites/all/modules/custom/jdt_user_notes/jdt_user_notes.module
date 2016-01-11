@@ -92,9 +92,9 @@ function jdt_user_notes_add_submit($form, &$form_state) {
  * Custom handler for jdt_user_notes_edit().
  */
 function jdt_user_notes_edit($note_id, $article_nid) {
-  $existing_note = jdt_user_notes_read($note_id);
+  $existing_note = jdt_user_notes_read($note_id, NULL);
 
-  if (empty($existing_note) || $existing_note['article_nid'] != $article_nid) {
+  if (empty($existing_note) || $existing_note[0]['article_nid'] != $article_nid) {
     $message = 'This article note does not exist.';
     $form = drupal_get_form('jdt_user_notes_error_form', $message);
   }
@@ -131,25 +131,40 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
 }
 
 /**
+ * Validates both the add and edit forms, ensuring note_title and note_body do 
+ * not exceed 255 characters.
+ */
+function jdt_user_notes_validate($form, &$form_state) {
+  if (strlen($form_state['input']['note_title']) > 254) {
+    form_set_error('note_title', t('Your note title must be less than 255 
+      characters.'));
+  }
+  if (strlen($form_state['input']['note_body']) > 254) {
+    form_set_error('note_body', t('Your note body must be less than 255 
+      characters.'));
+  }
+}
+
+/**
  * Custom adding/editting form.
  */
 function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
 
   if (!empty($note_id)) {
-    $note = jdt_user_notes_read($note_id);
+    $note = jdt_user_notes_read($note_id, NULL);
   }
 
   $form['note_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
-    '#value' => isset($note['note_title']) ? $note['note_title'] : '',
+    '#value' => isset($note[0]['note_title']) ? $note[0]['note_title'] : '',
     '#maxlength' => 254,
   );
 
   $form['note_body'] = array(
     '#type' => 'textarea',
     '#title' => t('Body'),
-    '#value' => isset($note['note_text']) ? $note['note_text'] : '',
+    '#value' => isset($note[0]['note_text']) ? $note[0]['note_text'] : '',
     '#attributes' => array('maxlength' => 254),
   );
 
@@ -162,6 +177,7 @@ function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
     '#value' => isset($note) ? t('Edit') : t('Create'),
   );
 
+  $form['#validate'][] = 'jdt_user_notes_validate';
   if (isset($note)) {
     $form['#submit'][] = 'jdt_user_notes_edit_submit';
   }

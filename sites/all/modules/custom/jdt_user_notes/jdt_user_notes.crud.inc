@@ -26,17 +26,32 @@ function jdt_user_notes_create($fields) {
 /**
  * R - Read.
  *
- * Takes note_id and returns associative array of that row.
+ * Takes note_id and returns associative array of that row,
+ * or takes an article_nid and returns all the notes for that article.
  */
-function jdt_user_notes_read($note_id) {
+function jdt_user_notes_read($note_id, $article_nid) {
   $table = 'jdt_user_notes';
   $table_abbr = 'j';
-  $res = db_select($table, $table_abbr)
-    ->fields($table_abbr)
-    ->condition('note_id', $note_id)
-    ->execute();
 
-  return $res->fetchAssoc();
+  if ($note_id === NULL) {
+    $res = db_select($table, $table_abbr)
+      ->fields($table_abbr)
+      ->condition('article_nid', $article_nid)
+      ->execute();
+  }
+  else {
+    $res = db_select($table, $table_abbr)
+      ->fields($table_abbr)
+      ->condition('note_id', $note_id)
+      ->execute();
+  }
+
+  $result = array();
+  while ($row = $res->fetchAssoc()) {
+    $result[] = $row;
+  }
+
+  return $result;
 }
 
 /**
