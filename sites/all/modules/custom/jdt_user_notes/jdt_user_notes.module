@@ -211,11 +211,20 @@ function jdt_user_notes_error_form($form, &$form_state, $message) {
  * Should only be displayed if it is an article and there is notes for it.
  */
 function article_node_load($article_nid) {
+  global $user;
   $node = node_load($article_nid);
 
   $notes = jdt_user_notes_read_article($article_nid);
 
-  if ($node->type == 'article' && count($notes) > 0) {
+  //Check if any of the notes (if there are any) belong to the user.
+  $my_notes = 0;
+  foreach ($notes as $note) {
+    if ($note['author_uid'] == $user->uid) {
+      $my_notes++;
+    }
+  }
+
+  if ($node->type == 'article' && $my_notes > 0) {
     return $node; 
   } 
   else {
@@ -227,17 +236,20 @@ function article_node_load($article_nid) {
  * Callback function for displaying article notes.
  */
 function jdt_user_notes_display($article_nid) {
+  global $user;
+
   $notes = jdt_user_notes_read_article($article_nid->nid);
 
-  $user = user_load($article_nid->uid);
-  $username = $user->name;
-
+  //Print out each note as defined by the custom theme.
   foreach ($notes as $note) {
-    print theme('jdt_user_notes', array(
-      'note_text' => $note['note_text'],
-      'article_title' => $article_nid->title,
-      'article_author' => $username,
-    ));
+    //Only print out notes written by the user.
+    if ($note['author_uid'] == $user->uid) {
+      print theme('jdt_user_notes', array(
+        'note_text' => $note['note_text'],
+        'article_title' => $article_nid->title,
+        'article_author' => $user->name
+      ));
+    }
   }
 }
 
