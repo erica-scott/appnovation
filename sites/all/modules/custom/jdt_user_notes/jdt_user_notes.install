@@ -54,4 +54,3 @@ function jdt_user_notes_update_7000() {
 
   db_add_field('jdt_user_notes', 'note_title', $spec);
 }
-

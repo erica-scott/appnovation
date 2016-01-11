@@ -11,8 +11,6 @@ include_once 'jdt_user_notes.crud.inc';
 
 /**
  * Implements hook_permission().
- *
- * Controls permissions.
  */
 function jdt_user_notes_permission() {
   $permissions = array(
@@ -39,25 +37,26 @@ function jdt_user_notes_permission() {
 function jdt_user_notes_menu() {
   $items = array();
 
-  $items['jdt_user_notes/add/%'] = array(
+  $items['node/%node/add'] = array(
     'title' => 'Add a Note',
     'page callback' => 'jdt_user_notes_add',
-    'page arguments' => array(2),
+    'page arguments' => array(1),
     'access arguments' => array('create notes'),
   );
 
-  $items['jdt_user_notes/edit/%/%'] = array(
+  $items['node/%node/edit/%'] = array(
     'title' => 'Edit a Note',
     'page callback' => 'jdt_user_notes_edit',
-    'page arguments' => array(2, 3),
+    'page arguments' => array(1, 3),
     'access arguments' => array('update notes'),
   );
 
-  $items['node/%article_node/jdt_user_notes_display'] = array(
+  $items['node/%node/notes'] = array(
     'title' => 'My Notes',
     'page callback' => 'jdt_user_notes_display',
     'page arguments' => array(1),
-    'access callback' => TRUE,
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
 
@@ -65,12 +64,138 @@ function jdt_user_notes_menu() {
 }
 
 /**
- * Custom handler for jdt_user_notes_add().
+ * Callback function for add notes page.
  */
 function jdt_user_notes_add($article_nid) {
   $note_id = NULL;
   $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
   return $form;
+}
+
+/**
+ * Callback function for edit notes page.
+ */
+function jdt_user_notes_edit($article_nid, $note_id) {
+  $existing_note = jdt_user_notes_read($note_id);
+
+  if (empty($existing_note) || $existing_note['article_nid'] != $article_nid->nid) {
+    $message = 'This article note does not exist.';
+    $form = drupal_get_form('jdt_user_notes_error_form', $message);
+  }
+  else {
+    $form = drupal_get_form('jdt_user_notes_form', $article_nid, $note_id);
+  }
+
+  return $form;
+}
+
+/**
+ * Callback function for displaying article notes.
+ */
+function jdt_user_notes_display($article_nid) {
+  global $user;
+
+  $notes = jdt_user_notes_read_article($article_nid->nid);
+  dpm($notes);
+
+  $output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('notes-container'),
+    ),
+  );
+
+  $i = 0;
+  foreach ($notes as $note) {
+    $output['note-container-' . $i] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('note-container'),
+      ),
+    );
+
+    $output['note-container-' . $i]['note-text'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('note-text'),
+      ),
+    );
+
+    $output['note-container-' . $i]['note-text']['text'] = array(
+      '#type' => 'markup',
+      '#markup' => $note['note_text'],
+    );
+
+    $output['note-container-' . $i]['node-title'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('node-title'),
+      ),
+    );
+
+    $output['note-container-' . $i]['node-title']['title'] = array(
+      '#type' => 'markup',
+      '#markup' => $article_nid->title,
+    );
+
+    $output['note-container-' . $i]['node-author'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('node-author'),
+      ),
+    );
+
+    $output['note-container-' . $i]['node-author']['author'] = array(
+      '#type' => 'markup',
+      '#markup' => $user->name,
+    );
+    
+    $i++;
+  }
+
+  return $output;
+}
+
+/**
+ * Validates both the add and edit forms.
+ *
+ * Ensures note_title and note_body do not exceed 255 characters.
+ */
+function jdt_user_notes_validate($form, &$form_state) {
+  if (strlen($form_state['input']['note_title']) > 254) {
+    form_set_error('note_title', t('Your note title must be less than 255 
+      characters.'));
+  }
+  if (strlen($form_state['input']['note_body']) > 254) {
+    form_set_error('note_body', t('Your note body must be less than 255 
+      characters.'));
+  }
+}
+
+/**
+ * Access callback function for notes page.
+ */
+function jdt_user_notes_access($article_nid) {
+  global $user;
+
+  $article_notes = jdt_user_notes_read_article($article_nid->nid);
+
+  // Check if any notes exist, and if any belong to user.
+  $my_notes = 0;
+  foreach ($article_notes as $note) {
+    if ($note['author_uid'] == $user->uid) {
+      $my_notes++;
+    }
+  }
+
+  // Only show the tab if node type is article, and there are notes that 
+  // belong to the user.
+  if ($my_notes > 0 && $article_nid->type == 'article') {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -94,23 +219,6 @@ function jdt_user_notes_add_submit($form, &$form_state) {
   else {
     drupal_set_message(t('This note has been succesfully created!'));
   }
-}
-
-/**
- * Custom handler for jdt_user_notes_edit().
- */
-function jdt_user_notes_edit($note_id, $article_nid) {
-  $existing_note = jdt_user_notes_read($note_id);
-
-  if (empty($existing_note) || $existing_note['article_nid'] != $article_nid) {
-    $message = 'This article note does not exist.';
-    $form = drupal_get_form('jdt_user_notes_error_form', $message);
-  }
-  else {
-    $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
-  }
-
-  return $form;
 }
 
 /**
@@ -139,21 +247,6 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
 }
 
 /**
- * Validates both the add and edit forms, ensuring note_title and note_body do 
- * not exceed 255 characters.
- */
-function jdt_user_notes_validate($form, &$form_state) {
-  if (strlen($form_state['input']['note_title']) > 254) {
-    form_set_error('note_title', t('Your note title must be less than 255 
-      characters.'));
-  }
-  if (strlen($form_state['input']['note_body']) > 254) {
-    form_set_error('note_body', t('Your note body must be less than 255 
-      characters.'));
-  }
-}
-
-/**
  * Custom adding/editting form.
  */
 function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
@@ -176,7 +269,7 @@ function jdt_user_notes_form($form, &$form_state, $note_id, $article_nid) {
     '#attributes' => array('maxlength' => 254),
   );
 
-  $form_state['build_info']['args']['article_nid'] = $article_nid;
+  $form_state['build_info']['args']['article_nid'] = $article_nid->nid;
 
   $form_state['build_info']['args']['note_id'] = $note_id;
 
@@ -204,80 +297,3 @@ function jdt_user_notes_error_form($form, &$form_state, $message) {
 
   return $form;
 }
-
-/**
- * Decides whether to display the 'My Notes' tab on nodes. 
- *
- * Should only be displayed if it is an article and there is notes for it.
- */
-function article_node_load($article_nid) {
-  global $user;
-  $node = node_load($article_nid);
-
-  $notes = jdt_user_notes_read_article($article_nid);
-
-  //Check if any of the notes (if there are any) belong to the user.
-  $my_notes = 0;
-  foreach ($notes as $note) {
-    if ($note['author_uid'] == $user->uid) {
-      $my_notes++;
-    }
-  }
-
-  if ($node->type == 'article' && $my_notes > 0) {
-    return $node; 
-  } 
-  else {
-    return FALSE;
-  }
-}
-
-/**
- * Callback function for displaying article notes.
- */
-function jdt_user_notes_display($article_nid) {
-  global $user;
-
-  $notes = jdt_user_notes_read_article($article_nid->nid);
-
-  //Print out each note as defined by the custom theme.
-  foreach ($notes as $note) {
-    //Only print out notes written by the user.
-    if ($note['author_uid'] == $user->uid) {
-      print theme('jdt_user_notes', array(
-        'note_text' => $note['note_text'],
-        'article_title' => $article_nid->title,
-        'article_author' => $user->name
-      ));
-    }
-  }
-}
-
-/**
- * Implements hook_theme().
- */
-function jdt_user_notes_theme() {
-  return array(
-    'jdt_user_notes' => array(
-      'render element' => 'element',
-      'variables' => array(
-        'note_text' => NULL,
-        'article_title' => NULL,
-        'article_author' => NULL,
-      ),
-    ),
-  );
-}
-
-/**
- * Custom DOM for displaying article notes.
- */
-function theme_jdt_user_notes($variables) {
-  return '<div class="note-container"><div class="note-text">' . 
-  $variables['note_text'] . '</div><div class="node-title">' .
-  $variables['article_title'] . '</div><div class="node-author">' .
-  $variables['article_author'] . '</div></div>';
-}
-
-
-

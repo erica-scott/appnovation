@@ -74,7 +74,7 @@ class JDTUserNotesCRUDTest extends DrupalWebTestCase {
       ))
       ->execute();
 
-    //Read from a specific note_id
+    // Read from a specific note_id.
     $return = jdt_user_notes_read($note_id, NULL);
 
     $found = !empty($return);
@@ -95,7 +95,7 @@ class JDTUserNotesCRUDTest extends DrupalWebTestCase {
       ))
       ->execute();
 
-    //Adding one that shouldn't be found, as its article_nid is different.
+    // Adding one that shouldn't be found, as its article_nid is different.
     $note_id = db_insert('jdt_user_notes')
       ->fields(array(
         'article_nid' => 1,
@@ -116,13 +116,13 @@ class JDTUserNotesCRUDTest extends DrupalWebTestCase {
 
     $this->assertTrue($size_of_2, 'Should only have two rows in array.');
 
-    //Checks first row.
+    // Checks first row.
     $this->assertEqual($return[0]['article_nid'], 0);
     $this->assertEqual($return[0]['author_uid'], 0);
     $this->assertEqual($return[0]['note_text'], 'Blah blah blah');
     $this->assertEqual($return[0]['note_title'], 'Test Title');
 
-    //Checks second row.
+    // Checks second row.
     $this->assertEqual($return[1]['article_nid'], 0);
     $this->assertEqual($return[1]['author_uid'], 2);
     $this->assertEqual($return[1]['note_text'], 'Testing!!');
