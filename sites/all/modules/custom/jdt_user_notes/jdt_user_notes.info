@@ -6,3 +6,4 @@ files[] = jdt_user_notes.test
 dependencies[] = jdt_content_type_article
 dependencies[] = jdt_core
 dependencies[] = simpletest
+dependencies[] = ctools
