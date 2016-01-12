@@ -54,3 +54,10 @@ function jdt_core_update_7008() {
   
   module_enable($feature);
 }
+
+/**
+ * Enables the new theme for the site.
+ */
+function jdt_core_update_7009() {
+  theme_enable(array('best_responsive'));
+}
