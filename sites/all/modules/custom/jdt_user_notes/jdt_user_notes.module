@@ -49,13 +49,15 @@ function jdt_user_notes_menu() {
   $items['node/%node/add/%ctools_js'] = array(
     'page callback' => 'jdt_user_notes_add',
     'page arguments' => array(1, 3),
-    'access arguments' => array('create new note'),
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1, 'create new note'),
   );
 
   $items['node/%node/edit/%/%ctools_js'] = array(
     'page callback' => 'jdt_user_notes_edit',
     'page arguments' => array(1, 3, 4),
-    'access arguments' => array('edit own note'),
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1, 'edit own note', 3),
   );
 
   $items['node/%node/notes'] = array(
@@ -63,7 +65,7 @@ function jdt_user_notes_menu() {
     'page callback' => 'jdt_user_notes_display',
     'page arguments' => array(1),
     'access callback' => 'jdt_user_notes_access',
-    'access arguments' => array(1),
+    'access arguments' => array(1, 'read own notes'),
     'type' => MENU_LOCAL_TASK,
   );
 
@@ -294,26 +296,40 @@ function jdt_user_notes_validate($form, &$form_state) {
 /**
  * Access callback function for notes page.
  */
-function jdt_user_notes_access($article_nid) {
+function jdt_user_notes_access($article_nid, $permission_type, $note_id = NULL) {
   global $user;
 
-  if (!user_access('read own notes')) {
+  if (!user_access($permission_type)) {
     return FALSE;
   }
 
-  $article_notes = jdt_user_notes_read_article($article_nid->nid, $user->uid);
+  switch ($permission_type) {
+    case 'create new note' :
+      return TRUE;
+    break;
 
-  // Check if any notes exist, and if any belong to user.
-  $my_notes = 0;
-  foreach ($article_notes as $note) {
-    if ($note['author_uid'] == $user->uid) {
-      $my_notes++;
-    }
+    case 'edit own note' :
+      $note = jdt_user_notes_read($note_id);
+
+      return ($note['author_uid'] == $user->uid);
+    break;
+
+    case 'read own notes' :
+      $article_notes = jdt_user_notes_read_article($article_nid->nid, $user->uid);
+
+      // Check if any notes exist, and if any belong to user.
+      $my_notes = 0;
+      foreach ($article_notes as $note) {
+        if ($note['author_uid'] == $user->uid) {
+          $my_notes++;
+        }
+      }
+
+      // Only show the tab if node type is article, and there are notes that
+      // belong to the user.
+      return ($my_notes > 0 && $article_nid->type == 'article');
+    break;
   }
-
-  // Only show the tab if node type is article, and there are notes that
-  // belong to the user.
-  return ($my_notes > 0 && $article_nid->type == 'article');
 }
 
 /**
