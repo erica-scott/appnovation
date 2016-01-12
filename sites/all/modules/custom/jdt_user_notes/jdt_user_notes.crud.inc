@@ -9,6 +9,9 @@
  *
  * Takes array of fields, returns rows affected.
  */
+/**
+ * TODO: Ensure only add if it's an article.
+ */
 function jdt_user_notes_create($fields) {
   $table = 'jdt_user_notes';
   $res = db_insert($table)
@@ -44,15 +47,16 @@ function jdt_user_notes_read($note_id) {
 /**
  * R- Read.
  *
- * Takes article_nid and returns all notes for that article.
+ * Returns all notes for a specified article created by the user.
  */
-function jdt_user_notes_read_article($article_nid) {
+function jdt_user_notes_read_article($article_nid, $author_uid) {
   $table = 'jdt_user_notes';
   $table_abbr = 'j';
 
   $res = db_select($table, $table_abbr)
     ->fields($table_abbr)
     ->condition('article_nid', $article_nid)
+    ->condition('author_uid', $author_uid)
     ->execute();
 
   $result = array();
