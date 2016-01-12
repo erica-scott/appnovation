@@ -97,6 +97,10 @@
       </header>
   <?php endif; ?>
 
+  <?php if (array_key_exists('add_link', $content)) {
+    print drupal_render($content['add_link']);
+  } ?>
+
   <div class="content"<?php print $content_attributes; ?>>
     <?php
       // Hide comments and links now so that we can render them later.
