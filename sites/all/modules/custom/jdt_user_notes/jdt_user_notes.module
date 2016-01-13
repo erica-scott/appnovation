@@ -133,12 +133,11 @@ function jdt_user_notes_add($article_nid, $ajax) {
     $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
     return $form;
   }
-}
 
 /**
  * Callback function for edit notes page.
  */
-function jdt_user_notes_edit($article_nid, $note_id, $ajax) {
+function jdt_user_notes_edit($article, $note_id, $ajax) {
   $existing_note = jdt_user_notes_read($note_id);
 
   if ($ajax) {
@@ -152,7 +151,7 @@ function jdt_user_notes_edit($article_nid, $note_id, $ajax) {
       'title' => t('Edit Note'),
     );
 
-    if (empty($existing_note) || $existing_note['article_nid'] != $article_nid->nid) {
+    if (empty($existing_note) || $existing_note['article_nid'] != $article->nid) {
       $message = 'This note does not exist.';
       $form_state['build_info'] = array(
         'args' => array(
@@ -164,7 +163,7 @@ function jdt_user_notes_edit($article_nid, $note_id, $ajax) {
     else {
       $form_state['build_info'] = array(
         'args' => array(
-          'article_nid' => $article_nid,
+          'article_nid' => $article,
           'note_id' => $note_id,
         ),
       );
@@ -178,12 +177,12 @@ function jdt_user_notes_edit($article_nid, $note_id, $ajax) {
     print ajax_render($output);
   }
   else {
-    if (empty($existing_note) || $existing_note['article_nid'] != $article_nid->nid) {
+    if (empty($existing_note) || $existing_note['article'] != $article->nid) {
       $message = 'This article note does not exist.';
       $form = drupal_get_form('jdt_user_notes_error_form', $message);
     }
     else {
-      $form = drupal_get_form('jdt_user_notes_form', $article_nid, $note_id);
+      $form = drupal_get_form('jdt_user_notes_form', $article, $note_id);
     }
 
     return $form;
@@ -193,7 +192,7 @@ function jdt_user_notes_edit($article_nid, $note_id, $ajax) {
 /**
  * Callback function for displaying article notes.
  */
-function jdt_user_notes_display($article_nid) {
+function jdt_user_notes_display($article) {
   global $user;
 
   ctools_include('modal');
@@ -201,7 +200,7 @@ function jdt_user_notes_display($article_nid) {
   ctools_modal_add_js();
   ctools_add_js('ajax-responder');
 
-  $notes = jdt_user_notes_read_article($article_nid->nid, $user->uid);
+  $notes = jdt_user_notes_read_article($article->nid, $user->uid);
 
   $output = array(
     '#type' => 'container',
@@ -240,7 +239,7 @@ function jdt_user_notes_display($article_nid) {
 
     $output[$note_container]['node-title']['title'] = array(
       '#type' => 'markup',
-      '#markup' => $article_nid->title,
+      '#markup' => $article->title,
     );
 
     $output[$note_container]['node-author'] = array(
@@ -296,7 +295,8 @@ function jdt_user_notes_validate($form, &$form_state) {
 /**
  * Access callback function for notes page.
  */
-function jdt_user_notes_access($article_nid, $permission_type, $note_id = NULL) {
+function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
+>>>>>>> debugging-task-18
   global $user;
 
   if (!user_access($permission_type)) {
@@ -306,13 +306,11 @@ function jdt_user_notes_access($article_nid, $permission_type, $note_id = NULL) 
   switch ($permission_type) {
     case 'create new note' :
       return TRUE;
-    break;
 
     case 'edit own note' :
       $note = jdt_user_notes_read($note_id);
 
       return ($note['author_uid'] == $user->uid);
-    break;
 
     case 'read own notes' :
       $article_notes = jdt_user_notes_read_article($article_nid->nid, $user->uid);
@@ -328,8 +326,9 @@ function jdt_user_notes_access($article_nid, $permission_type, $note_id = NULL) 
       // Only show the tab if node type is article, and there are notes that
       // belong to the user.
       return ($my_notes > 0 && $article_nid->type == 'article');
-    break;
   }
+  
+  return FALSE;
 }
 
 /**
@@ -412,7 +411,7 @@ function jdt_user_notes_form($form, &$form_state) {
     '#attributes' => array('maxlength' => 254),
   );
 
-  $form_state['build_info']['args']['article_nid'] = $article_nid->nid;
+  $form_state['build_info']['args']['article_nid'] = $article->nid;
 
   $form_state['build_info']['args']['note_id'] = $note_id;
 
