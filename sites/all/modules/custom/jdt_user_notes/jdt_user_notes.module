@@ -304,15 +304,15 @@ function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
   }
 
   switch ($permission_type) {
-    case 'create new note' :
+    case 'create new note':
       return TRUE;
 
-    case 'edit own note' :
+    case 'edit own note':
       $note = jdt_user_notes_read($note_id);
 
       return ($note['author_uid'] == $user->uid);
 
-    case 'read own notes' :
+    case 'read own notes':
       $article_notes = jdt_user_notes_read_article($article->nid, $user->uid);
 
       // Only show the tab if node type is article, and there are notes.
@@ -448,9 +448,9 @@ function jdt_user_notes_block_view($delta = '') {
   $block = array();
 
   switch ($delta) {
-    case 'site_data' :
+    case 'site_data':
       $block['content'] = jdt_user_notes_site_data();
-    break;
+      break;
   }
 
   return $block;
@@ -458,20 +458,20 @@ function jdt_user_notes_block_view($delta = '') {
 
 /**
  * Custom function to build renderable array for site data block.
- */ 
+ */
 function jdt_user_notes_site_data() {
-  $articles = db_select('node', 'n')
+  $number_articles = db_select('node', 'n')
     ->fields('n')
     ->condition('type', 'article')
-    ->execute();
+    ->countQuery()
+    ->execute()
+    ->fetchField();
 
-  $number_articles = $articles->rowCount();
-
-  $notes = db_select('jdt_user_notes', 'j')
+  $number_notes = db_select('jdt_user_notes', 'j')
     ->fields('j')
-    ->execute();
-
-  $number_notes = $notes->rowCount();
+    ->countQuery()
+    ->execute()
+    ->fetchField();
 
   $users = entity_load('user');
   $number_users = count($users);
@@ -493,7 +493,7 @@ function jdt_user_notes_site_data() {
       ),
       'number_articles' => array(
         '#type' => 'markup',
-        '#markup' => 'Total Articles: ' . $number_articles,
+        '#markup' => t('Total Articles:') . $number_articles,
       ),
     ),
   );
@@ -506,7 +506,7 @@ function jdt_user_notes_site_data() {
       ),
       'number_notes' => array(
         '#type' => 'markup',
-        '#markup' => 'Total Notes: ' . $number_notes,
+        '#markup' => t('Total Notes:') . $number_notes,
       ),
     ),
   );
@@ -519,7 +519,7 @@ function jdt_user_notes_site_data() {
       ),
       'number_users' => array(
         '#type' => 'markup',
-        '#markup' => 'Total Users: ' . $number_users,
+        '#markup' => t('Total Users:') . $number_users,
       ),
     ),
   );
