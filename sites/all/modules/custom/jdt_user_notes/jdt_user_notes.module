@@ -110,7 +110,6 @@ function jdt_user_notes_add($article, $ajax) {
     ctools_modal_add_js();
     ctools_add_js('ajax-responder');
 
-    //todo
     $form_state = array(
       'ajax' => TRUE,
       'title' => t('Add Note'),
@@ -153,26 +152,15 @@ function jdt_user_notes_edit($article, $note_id, $ajax) {
       'title' => t('Edit Note'),
     );
 
-    if (empty($existing_note) || $existing_note['article_nid'] != $article->nid) {
-      $message = 'This note does not exist.';
-      //todo
-      $form_state['build_info'] = array(
-        'args' => array(
-          'message' => $message,
-        ),
-      );
-      $output = ctools_modal_form_wrapper('jdt_user_notes_error_form', $form_state);
-    }
-    else {
-      //todo
-      $form_state['build_info'] = array(
-        'args' => array(
-          'article' => $article,
-          'note_id' => $note_id,
-        ),
-      );
-      $output = ctools_modal_form_wrapper('jdt_user_notes_form', $form_state);
-    }
+
+    $form_state['build_info'] = array(
+      'args' => array(
+        'article' => $article,
+        'note_id' => $note_id,
+      ),
+    );
+    $output = ctools_modal_form_wrapper('jdt_user_notes_form', $form_state);
+    
 
     if (!empty($form_state['ajax_commands'])) {
       $output = $form_state['ajax_commands'];
@@ -181,13 +169,7 @@ function jdt_user_notes_edit($article, $note_id, $ajax) {
     print ajax_render($output);
   }
   else {
-    if (empty($existing_note) || $existing_note['article'] != $article->nid) {
-      $message = 'This article note does not exist.';
-      $form = drupal_get_form('jdt_user_notes_error_form', $message);
-    }
-    else {
-      $form = drupal_get_form('jdt_user_notes_form', $article, $note_id);
-    }
+    $form = drupal_get_form('jdt_user_notes_form', $article, $note_id);
 
     return $form;
   }
@@ -422,15 +404,6 @@ function jdt_user_notes_form($form, &$form_state) {
 }
 
 /**
- * Custom form for any error that occurs.
- */
-function jdt_user_notes_error_form($form, &$form_state) {
-  drupal_set_message($message, 'error');
-
-  return $form;
-}
-
-/**
  * Implements hook_block_info().
  */
 function jdt_user_notes_block_info() {
@@ -473,8 +446,12 @@ function jdt_user_notes_site_data() {
     ->execute()
     ->fetchField();
 
-  $users = entity_load('user');
-  $number_users = count($users);
+  $number_users = db_select('sessions', 's')
+    ->fields('s')
+    ->condition('uid', 0, '!=')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
 
   $block = array(
     'container' => array(
@@ -493,7 +470,9 @@ function jdt_user_notes_site_data() {
       ),
       'number_articles' => array(
         '#type' => 'markup',
-        '#markup' => t('Total Articles:') . $number_articles,
+        '#markup' => t('Total Articles: @num', array(
+          '@num' => $number_articles
+        )),
       ),
     ),
   );
@@ -506,7 +485,9 @@ function jdt_user_notes_site_data() {
       ),
       'number_notes' => array(
         '#type' => 'markup',
-        '#markup' => t('Total Notes:') . $number_notes,
+        '#markup' => t('Total Notes: @num', array(
+          '@num' => $number_notes
+        )),
       ),
     ),
   );
@@ -519,7 +500,9 @@ function jdt_user_notes_site_data() {
       ),
       'number_users' => array(
         '#type' => 'markup',
-        '#markup' => t('Total Users:') . $number_users,
+        '#markup' => t('Total Users: @num', array(
+          '@num' => $number_users
+        )),
       ),
     ),
   );

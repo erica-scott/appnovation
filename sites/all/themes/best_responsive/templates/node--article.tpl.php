@@ -97,7 +97,7 @@
       </header>
   <?php endif; ?>
 
-  <?php if (array_key_exists('add_link', $content)): ?>
+  <?php if (!empty($content['add_link'])): ?>
     <?php print drupal_render($content['add_link']); ?>
   <?php endif; ?>
 
