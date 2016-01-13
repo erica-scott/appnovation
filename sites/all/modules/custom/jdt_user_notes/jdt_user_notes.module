@@ -315,17 +315,8 @@ function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
     case 'read own notes' :
       $article_notes = jdt_user_notes_read_article($article->nid, $user->uid);
 
-      // Check if any notes exist, and if any belong to user.
-      $my_notes = 0;
-      foreach ($article_notes as $note) {
-        if ($note['author_uid'] == $user->uid) {
-          $my_notes++;
-        }
-      }
-
-      // Only show the tab if node type is article, and there are notes that
-      // belong to the user.
-      return ($my_notes > 0 && $article->type == 'article');
+      // Only show the tab if node type is article, and there are notes.
+      return (!empty($article_notes) && $article->type == 'article');
   }
   return FALSE;
 }
