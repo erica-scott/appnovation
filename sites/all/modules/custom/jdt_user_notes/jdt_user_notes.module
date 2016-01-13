@@ -424,3 +424,100 @@ function jdt_user_notes_error_form($form, &$form_state, $message) {
 
   return $form;
 }
+
+/**
+ * Implements hook_block_info().
+ */
+function jdt_user_notes_block_info() {
+  $blocks['site_data'] = array(
+    'info' => t('Site Data'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function jdt_user_notes_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'site_data' :
+      $block['content'] = jdt_user_notes_site_data();
+    break;
+  }
+
+  return $block;
+}
+
+/**
+ * Custom function to build renderable array for site data block.
+ */ 
+function jdt_user_notes_site_data() {
+  $articles = db_select('node', 'n')
+    ->fields('n')
+    ->condition('type', 'article')
+    ->execute();
+
+  $number_articles = $articles->rowCount();
+
+  $notes = db_select('jdt_user_notes', 'j')
+    ->fields('j')
+    ->execute();
+
+  $number_notes = $notes->rowCount();
+
+  $users = entity_load('user');
+  $number_users = count($users);
+
+  $block = array(
+    'container' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'site-data',
+      ),
+    ),
+  );
+
+  $block['articles'] = array(
+    'articles' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'article-container',
+      ),
+      'number_articles' => array(
+        '#type' => 'markup',
+        '#markup' => 'Total Articles: ' . $number_articles,
+      ),
+    ),
+  );
+
+  $block['notes'] = array(
+    'articles' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'note-container',
+      ),
+      'number_notes' => array(
+        '#type' => 'markup',
+        '#markup' => 'Total Notes: ' . $number_notes,
+      ),
+    ),
+  );
+
+  $block['users'] = array(
+    'articles' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'user-container',
+      ),
+      'number_users' => array(
+        '#type' => 'markup',
+        '#markup' => 'Total Users: ' . $number_users,
+      ),
+    ),
+  );
+
+  return $block;
+}
