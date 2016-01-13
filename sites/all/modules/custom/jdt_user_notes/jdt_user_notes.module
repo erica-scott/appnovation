@@ -101,7 +101,7 @@ function jdt_user_notes_node_view($node, $view_mode) {
 /**
  * Callback function for add notes page.
  */
-function jdt_user_notes_add($article_nid, $ajax) {
+function jdt_user_notes_add($article, $ajax) {
   $note_id = NULL;
 
   if ($ajax) {
@@ -116,7 +116,7 @@ function jdt_user_notes_add($article_nid, $ajax) {
       'build_info' => array(
         'args' => array(
           'note_id' => $note_id,
-          'article_nid' => $article_nid,
+          'article_nid' => $article,
         ),
       ),
     );
@@ -130,7 +130,7 @@ function jdt_user_notes_add($article_nid, $ajax) {
     print ajax_render($output);
   }
   else {
-    $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
+    $form = drupal_get_form('jdt_user_notes_form', $note_id, $article);
     return $form;
   }
 }
@@ -313,7 +313,7 @@ function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
       return ($note['author_uid'] == $user->uid);
 
     case 'read own notes' :
-      $article_notes = jdt_user_notes_read_article($article_nid->nid, $user->uid);
+      $article_notes = jdt_user_notes_read_article($article->nid, $user->uid);
 
       // Check if any notes exist, and if any belong to user.
       $my_notes = 0;
@@ -325,7 +325,7 @@ function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
 
       // Only show the tab if node type is article, and there are notes that
       // belong to the user.
-      return ($my_notes > 0 && $article_nid->type == 'article');
+      return ($my_notes > 0 && $article->type == 'article');
   }
   return FALSE;
 }
@@ -389,7 +389,7 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
  */
 function jdt_user_notes_form($form, &$form_state) {
 
-  $article_nid = $form_state['build_info']['args']['article_nid'];
+  $article = $form_state['build_info']['args']['article_nid'];
   $note_id = $form_state['build_info']['args']['note_id'];
 
   if (!empty($note_id)) {
