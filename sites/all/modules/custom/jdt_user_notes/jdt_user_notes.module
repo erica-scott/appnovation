@@ -110,13 +110,14 @@ function jdt_user_notes_add($article, $ajax) {
     ctools_modal_add_js();
     ctools_add_js('ajax-responder');
 
+    //todo
     $form_state = array(
       'ajax' => TRUE,
       'title' => t('Add Note'),
       'build_info' => array(
         'args' => array(
           'note_id' => $note_id,
-          'article_nid' => $article,
+          'article' => $article,
         ),
       ),
     );
@@ -154,6 +155,7 @@ function jdt_user_notes_edit($article, $note_id, $ajax) {
 
     if (empty($existing_note) || $existing_note['article_nid'] != $article->nid) {
       $message = 'This note does not exist.';
+      //todo
       $form_state['build_info'] = array(
         'args' => array(
           'message' => $message,
@@ -162,9 +164,10 @@ function jdt_user_notes_edit($article, $note_id, $ajax) {
       $output = ctools_modal_form_wrapper('jdt_user_notes_error_form', $form_state);
     }
     else {
+      //todo
       $form_state['build_info'] = array(
         'args' => array(
-          'article_nid' => $article,
+          'article' => $article,
           'note_id' => $note_id,
         ),
       );
@@ -328,7 +331,7 @@ function jdt_user_notes_add_submit($form, &$form_state) {
   global $user;
 
   $fields = array(
-    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'article_nid' => $form_state['build_info']['args']['article']->nid,
     'author_uid' => $user->uid,
     'note_title' => $form_state['values']['note_title'],
     'note_text' => $form_state['values']['note_body'],
@@ -354,13 +357,13 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
   global $user;
 
   $fields = array(
-    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'article_nid' => $form_state['build_info']['args']['article']->nid,
     'author_uid' => $user->uid,
     'note_title' => $form_state['values']['note_title'],
     'note_text' => $form_state['values']['note_body'],
   );
 
-  $note_id = intval($form_state['build_info']['args']['note_id']);
+  $note_id = $form_state['build_info']['args']['note_id'];
 
   $result = jdt_user_notes_update($note_id, $fields);
 
@@ -380,7 +383,8 @@ function jdt_user_notes_edit_submit($form, &$form_state) {
  */
 function jdt_user_notes_form($form, &$form_state) {
 
-  $article = $form_state['build_info']['args']['article_nid'];
+  //todo
+  $article = $form_state['build_info']['args']['article'];
   $note_id = $form_state['build_info']['args']['note_id'];
 
   if (!empty($note_id)) {
@@ -401,10 +405,6 @@ function jdt_user_notes_form($form, &$form_state) {
     '#attributes' => array('maxlength' => 254),
   );
 
-  $form_state['build_info']['args']['article_nid'] = $article->nid;
-
-  $form_state['build_info']['args']['note_id'] = $note_id;
-
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => isset($note) ? t('Edit') : t('Create'),
@@ -424,7 +424,7 @@ function jdt_user_notes_form($form, &$form_state) {
 /**
  * Custom form for any error that occurs.
  */
-function jdt_user_notes_error_form($form, &$form_state, $message) {
+function jdt_user_notes_error_form($form, &$form_state) {
   drupal_set_message($message, 'error');
 
   return $form;
