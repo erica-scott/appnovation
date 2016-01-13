@@ -3,3 +3,7 @@ description = Allows users to add notes to an article
 core = 7.x
 version = 7.x-1.0
 files[] = jdt_user_notes.test
+dependencies[] = jdt_content_type_article
+dependencies[] = jdt_core
+dependencies[] = simpletest
+dependencies[] = ctools

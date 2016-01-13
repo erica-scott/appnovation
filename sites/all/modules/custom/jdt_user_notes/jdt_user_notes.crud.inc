@@ -9,6 +9,9 @@
  *
  * Takes array of fields, returns rows affected.
  */
+/**
+ * TODO: Ensure only add if it's an article.
+ */
 function jdt_user_notes_create($fields) {
   $table = 'jdt_user_notes';
   $res = db_insert($table)
@@ -16,6 +19,7 @@ function jdt_user_notes_create($fields) {
       'article_nid' => $fields['article_nid'],
       'author_uid' => $fields['author_uid'],
       'note_text' => $fields['note_text'],
+      'note_title' => $fields['note_title'],
     ))
     ->execute();
 
@@ -30,12 +34,37 @@ function jdt_user_notes_create($fields) {
 function jdt_user_notes_read($note_id) {
   $table = 'jdt_user_notes';
   $table_abbr = 'j';
+
   $res = db_select($table, $table_abbr)
     ->fields($table_abbr)
-    ->condition('note_id', $note_id, '=')
+    ->condition('note_id', $note_id)
+    ->execute()
+    ->fetchAssoc();
+
+  return $res;
+}
+
+/**
+ * R- Read.
+ *
+ * Returns all notes for a specified article created by the user.
+ */
+function jdt_user_notes_read_article($article_nid, $author_uid) {
+  $table = 'jdt_user_notes';
+  $table_abbr = 'j';
+
+  $res = db_select($table, $table_abbr)
+    ->fields($table_abbr)
+    ->condition('article_nid', $article_nid)
+    ->condition('author_uid', $author_uid)
     ->execute();
 
-  return $res->fetchAssoc();
+  $result = array();
+  while ($row = $res->fetchAssoc()) {
+    $result[] = $row;
+  }
+
+  return $result;
 }
 
 /**
@@ -49,9 +78,10 @@ function jdt_user_notes_update($note_id, $fields) {
     ->fields(array(
       'article_nid' => $fields['article_nid'],
       'author_uid' => $fields['author_uid'],
+      'note_title' => $fields['note_title'],
       'note_text' => $fields['note_text'],
     ))
-    ->condition('note_id', $note_id, '=')
+    ->condition('note_id', $note_id)
     ->execute();
 
   return $res;
@@ -65,7 +95,7 @@ function jdt_user_notes_update($note_id, $fields) {
 function jdt_user_notes_delete($note_id) {
   $table = 'jdt_user_notes';
   $res = db_delete($table)
-    ->condition('note_id', $note_id, '=')
+    ->condition('note_id', $note_id)
     ->execute();
 
   return $res;

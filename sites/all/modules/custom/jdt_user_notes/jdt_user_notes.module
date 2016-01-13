@@ -5,25 +5,371 @@
  */
 
 /**
- * Implements hook_permission() for jdt_user_notes().
- *
- * Controls permissions.
+ * Include CRUD file.
+ */
+include_once 'jdt_user_notes.crud.inc';
+
+/**
+ * Implements hook_permission().
  */
 function jdt_user_notes_permission() {
   $permissions = array(
-    'creating notes' => array(
-      'title' => t('Add a Note'),
+    'read own notes' => array(
+      'title' => t('Read Own Notes'),
     ),
-    'reading notes' => array(
-      'title' => t('Read a Note'),
+    'read any notes' => array(
+      'title' => t('Read Any Notes'),
     ),
-    'updating notes' => array(
-      'title' => t('Edit a Note'),
+    'create new note' => array(
+      'title' => t('Create a Note'),
     ),
-    'deleting notes' => array(
-      'title' => t('Delete a Note'),
+    'edit own note' => array(
+      'title' => t('Edit Own Note'),
+    ),
+    'edit any note' => array(
+      'title' => t('Edit Any Note'),
+    ),
+    'delete own note' => array(
+      'title' => t('Delete Own Note'),
+    ),
+    'delete any note' => array(
+      'title' => t('Delete Any Note'),
     ),
   );
 
   return $permissions;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function jdt_user_notes_menu() {
+  $items = array();
+
+  $items['node/%node/add/%ctools_js'] = array(
+    'page callback' => 'jdt_user_notes_add',
+    'page arguments' => array(1, 3),
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1, 'create new note'),
+  );
+
+  $items['node/%node/edit/%/%ctools_js'] = array(
+    'page callback' => 'jdt_user_notes_edit',
+    'page arguments' => array(1, 3, 4),
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1, 'edit own note', 3),
+  );
+
+  $items['node/%node/notes'] = array(
+    'title' => 'My Notes',
+    'page callback' => 'jdt_user_notes_display',
+    'page arguments' => array(1),
+    'access callback' => 'jdt_user_notes_access',
+    'access arguments' => array(1, 'read own notes'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Callback function for add notes page.
+ */
+function jdt_user_notes_add($article) {
+  $note_id = NULL;
+  $form = drupal_get_form('jdt_user_notes_form', $note_id, $article);
+  return $form;
+}
+
+/**
+ * Callback function for edit notes page.
+ */
+function jdt_user_notes_edit($article, $note_id, $ajax) {
+  $existing_note = jdt_user_notes_read($note_id);
+
+  if ($ajax) {
+    ctools_include('modal');
+    ctools_include('ajax');
+    ctools_modal_add_js();
+    ctools_add_js('ajax-responder');
+
+    $form_state = array(
+      'ajax' => TRUE,
+      'title' => t('Edit Note'),
+    );
+
+    if (empty($existing_note) || $existing_note['article_nid'] != $article->nid) {
+      $message = 'This note does not exist.';
+      $form_state['build_info'] = array(
+        'args' => array(
+          'message' => $message,
+        ),
+      );
+      $output = ctools_modal_form_wrapper('jdt_user_notes_error_form', $form_state);
+    }
+    else {
+      $form_state['build_info'] = array(
+        'args' => array(
+          'article_nid' => $article,
+          'note_id' => $note_id,
+        ),
+      );
+      $output = ctools_modal_form_wrapper('jdt_user_notes_form', $form_state);
+    }
+
+    if (!empty($form_state['ajax_commands'])) {
+      $output = $form_state['ajax_commands'];
+    }
+
+    print ajax_render($output);
+  }
+  else {
+    if (empty($existing_note) || $existing_note['article'] != $article->nid) {
+      $message = 'This article note does not exist.';
+      $form = drupal_get_form('jdt_user_notes_error_form', $message);
+    }
+    else {
+      $form = drupal_get_form('jdt_user_notes_form', $article, $note_id);
+    }
+
+    return $form;
+  }
+}
+
+/**
+ * Callback function for displaying article notes.
+ */
+function jdt_user_notes_display($article) {
+  global $user;
+
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+  ctools_add_js('ajax-responder');
+
+  $notes = jdt_user_notes_read_article($article->nid, $user->uid);
+
+  $output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('notes-container'),
+    ),
+  );
+
+  foreach ($notes as $note) {
+    $note_container = 'note-container-' . $note['note_id'];
+    $output[$note_container] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('note-container'),
+      ),
+    );
+
+    $output[$note_container]['note-text'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('note-text'),
+      ),
+    );
+
+    $output[$note_container]['note-text']['text'] = array(
+      '#type' => 'markup',
+      '#markup' => $note['note_text'],
+    );
+
+    $output[$note_container]['node-title'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('node-title'),
+      ),
+    );
+
+    $output[$note_container]['node-title']['title'] = array(
+      '#type' => 'markup',
+      '#markup' => $article->title,
+    );
+
+    $output[$note_container]['node-author'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('node-author'),
+      ),
+    );
+
+    $output[$note_container]['node-author']['author'] = array(
+      '#type' => 'markup',
+      '#markup' => $user->name,
+    );
+
+    $output[$note_container]['edit-link'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'edit-link',
+      ),
+    );
+
+    $link = 'node/' . $note['article_nid'] . '/edit/' . $note['note_id'] . '/nojs';
+    $output[$note_container]['edit-link']['link'] = array(
+      '#type' => 'markup',
+      '#markup' => l(t('Edit Note'), $link, array(
+        'attributes' => array(
+          'class' => 'ctools-use-modal',
+        ),
+      )),
+    );
+
+  }
+
+  return $output;
+}
+
+/**
+ * Validates both the add and edit forms.
+ *
+ * Ensures note_title and note_body do not exceed 255 characters.
+ */
+function jdt_user_notes_validate($form, &$form_state) {
+  if (strlen($form_state['values']['note_title']) > 254) {
+    form_set_error('note_title', t('Your note title must be less than 255 
+      characters.'));
+  }
+  if (strlen($form_state['values']['note_body']) > 254) {
+    form_set_error('note_body', t('Your note body must be less than 255 
+      characters.'));
+  }
+}
+
+/**
+ * Access callback function for notes page.
+ */
+function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
+  global $user;
+
+  if (!user_access($permission_type)) {
+    return FALSE;
+  }
+
+  switch ($permission_type) {
+    case 'create new note' :
+      return TRUE;
+
+    case 'edit own note' :
+      $note = jdt_user_notes_read($note_id);
+
+      return ($note['author_uid'] == $user->uid);
+
+    case 'read own notes' :
+      $article_notes = jdt_user_notes_read_article($article->nid, $user->uid);
+
+      // Only show the tab if node type is article, and there are notes.
+      return (!empty($article_notes) && $article->type == 'article');
+  }
+
+  return FALSE;
+}
+
+/**
+ * Submits data for jdt_user_notes_add().
+ */
+function jdt_user_notes_add_submit($form, &$form_state) {
+  global $user;
+
+  $fields = array(
+    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['values']['note_title'],
+    'note_text' => $form_state['values']['note_body'],
+  );
+
+  $result = jdt_user_notes_create($fields);
+
+  if ($result == NULL) {
+    drupal_set_message(t('There was an error creating this note.'), 'error');
+  }
+  else {
+    drupal_set_message(t('This note has been succesfully created!'));
+  }
+}
+
+/**
+ * Submits data for jdt_user_notes_edit().
+ */
+function jdt_user_notes_edit_submit($form, &$form_state) {
+  global $user;
+
+  $fields = array(
+    'article_nid' => $form_state['build_info']['args']['article_nid'],
+    'author_uid' => $user->uid,
+    'note_title' => $form_state['values']['note_title'],
+    'note_text' => $form_state['values']['note_body'],
+  );
+
+  $note_id = intval($form_state['build_info']['args']['note_id']);
+
+  $result = jdt_user_notes_update($note_id, $fields);
+
+  if ($result === 0) {
+    drupal_set_message(t('There was an error editting the note.'), 'error');
+  }
+  else {
+    drupal_set_message(t('The note has been succesfully editted!'));
+  }
+
+  $form_state['ajax_commands'][] = ctools_modal_command_dismiss();
+  $form_state['ajax_commands'][] = ctools_ajax_command_reload();
+}
+
+/**
+ * Custom adding/editting form.
+ */
+function jdt_user_notes_form($form, &$form_state) {
+
+  $article_nid = $form_state['build_info']['args']['article_nid'];
+  $note_id = $form_state['build_info']['args']['note_id'];
+
+  if (!empty($note_id)) {
+    $note = jdt_user_notes_read($note_id);
+  }
+
+  $form['note_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => isset($note['note_title']) ? $note['note_title'] : '',
+    '#maxlength' => 254,
+  );
+
+  $form['note_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+    '#default_value' => isset($note['note_text']) ? $note['note_text'] : '',
+    '#attributes' => array('maxlength' => 254),
+  );
+
+  $form_state['build_info']['args']['article_nid'] = $article->nid;
+
+  $form_state['build_info']['args']['note_id'] = $note_id;
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => isset($note) ? t('Edit') : t('Create'),
+  );
+
+  $form['#validate'][] = 'jdt_user_notes_validate';
+  if (isset($note)) {
+    $form['#submit'][] = 'jdt_user_notes_edit_submit';
+  }
+  else {
+    $form['#submit'][] = 'jdt_user_notes_add_submit';
+  }
+
+  return $form;
+}
+
+/**
+ * Custom form for any error that occurs.
+ */
+function jdt_user_notes_error_form($form, &$form_state, $message) {
+  drupal_set_message($message, 'error');
+
+  return $form;
 }
