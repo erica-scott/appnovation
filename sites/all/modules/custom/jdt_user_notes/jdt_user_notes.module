@@ -133,6 +133,7 @@ function jdt_user_notes_add($article_nid, $ajax) {
     $form = drupal_get_form('jdt_user_notes_form', $note_id, $article_nid);
     return $form;
   }
+}
 
 /**
  * Callback function for edit notes page.
@@ -296,7 +297,6 @@ function jdt_user_notes_validate($form, &$form_state) {
  * Access callback function for notes page.
  */
 function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
->>>>>>> debugging-task-18
   global $user;
 
   if (!user_access($permission_type)) {
@@ -327,7 +327,6 @@ function jdt_user_notes_access($article, $permission_type, $note_id = NULL) {
       // belong to the user.
       return ($my_notes > 0 && $article_nid->type == 'article');
   }
-  
   return FALSE;
 }
 
