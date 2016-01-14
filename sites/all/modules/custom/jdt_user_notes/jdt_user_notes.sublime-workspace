@@ -1,0 +1,343 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"num",
+				"number_notes"
+			],
+			[
+				"permission",
+				"permission_type"
+			],
+			[
+				"article_",
+				"article_nid"
+			],
+			[
+				"note",
+				"note_title"
+			],
+			[
+				"drupal",
+				"drupal_set_message"
+			],
+			[
+				"drup",
+				"drupal_get_form"
+			],
+			[
+				"jdt_user_notes_add",
+				"jdt_user_notes_add_submit"
+			],
+			[
+				"jdt_user_note_add",
+				"jdt_user_notes_add_submit"
+			],
+			[
+				"jdt",
+				"jdt_user_notes_update"
+			],
+			[
+				"add",
+				"add"
+			],
+			[
+				"jdt_user",
+				"test_jdt_user_notes_create"
+			],
+			[
+				"jdt_",
+				"jdt_user_notes"
+			],
+			[
+				"to",
+				"to"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "jdt_user_notes.module",
+			"settings":
+			{
+				"buffer_size": 11847,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 267.0,
+		"selected_items":
+		[
+			[
+				"xdebug bre",
+				"Xdebug: Breakpoint - Detach"
+			],
+			[
+				"xdebug",
+				"Xdebug: Add/Remove Breakpoint"
+			],
+			[
+				"install pa",
+				"Package Control: Install Package"
+			],
+			[
+				"install pack",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 125.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.sublime-project",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/templates/node--article.tpl.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_training/jdt_training.module",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_training/jdt_training.install",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_training/jdt_training.info",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_training/jdt_training.module.html",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_training/jdt_training.install.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.module",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/testing.php",
+		"/Users/ericascott/Library/Application Support/Sublime Text 2/Packages/User/Xdebug.sublime-settings",
+		"/Users/ericascott/Library/Application Support/Sublime Text 2/Packages/Xdebug Client/Xdebug.sublime-settings",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/templates/node.tpl.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/templates/node--forum.tpl.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.crud.inc",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_core/jdt_core.module",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/testing/testing.module",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/testing/testing.info",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.test",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/testing_ajax/testing_ajax.module",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.info",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_content_type_article/jdt_content_type_article.strongarm.inc",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.install",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_core/jdt_core.install",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_content_type_article/jdt_content_type_article.features.field_instance.inc",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/templates/block.tpl.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/template.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/best_responsive.info",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/themes/best_responsive/templates/page.tpl.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/default/settings.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes_crud.include",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes.include.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes_crud.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes_db_manip.php",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_user_notes/jdt_user_notes_crud.php~",
+		"/Users/ericascott/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/Users/ericascott/Sites/devdesktop/appnovation/sites/all/modules/custom/jdt_core/jdt_core.info",
+		"/Users/ericascott/Documents/test2.php",
+		"/Users/ericascott/Library/Application Support/Sublime Text 2/Packages/Xdebug Client/xdebug_config.sublime-project",
+		"/Users/ericascott/Library/Application Support/Sublime Text 2/Packages/Xdebug Client/icons/config.sublime-project"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"todo",
+			"content",
+			"t('",
+			"title",
+			"jdt_user_notes_form",
+			"notes_edit",
+			"number_",
+			"jdt_user_notes_form",
+			"jdt_user_notes_edit",
+			"jdt_user_notes_form",
+			"jdt_user_notes_edit",
+			"To",
+			"Todo",
+			"todo",
+			"article_nid",
+			"todo",
+			"value",
+			"input",
+			"todo",
+			"jdt_user_notes_read_article",
+			"article_nid",
+			"content",
+			"jdt_user_notes_display",
+			"jdt_user_notes_read",
+			"drupal_set_message",
+			"updating",
+			"read",
+			"reading",
+			"creating",
+			"my_module",
+			"priviledged_user",
+			"+"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"article",
+			"update",
+			"read",
+			"create",
+			"priviledgedUser",
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "jdt_user_notes.module",
+					"settings":
+					{
+						"buffer_size": 11847,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8496,
+								8496
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 5188.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		},
+		{
+			"sheets":
+			[
+			]
+		},
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				2,
+				1
+			],
+			[
+				0,
+				1,
+				1,
+				2
+			],
+			[
+				1,
+				1,
+				2,
+				2
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.5,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			0.948453608247,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.xdebug":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 196.0,
+	"status_bar_visible": true
+}
