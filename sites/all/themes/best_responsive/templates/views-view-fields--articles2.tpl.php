@@ -22,13 +22,16 @@
 </style>
 
 <?php
+global $user;
+
 ctools_include('modal');
 ctools_include('ajax');
 ctools_modal_add_js();
 ctools_add_js('ajax-responder');
 
-$views[$view->result[0]->node_title] = $view->result[0]->nid;
-$views[$view->result[1]->node_title] = $view->result[1]->nid;
+for ($i = 0; $i < sizeof($view->result); $i++) {
+	$views[$view->result[$i]->node_title] = $view->result[$i]->nid;
+}
 
 foreach ($fields as $field) {
 	$pattern = '/<[\s\":a-zA-Z0-9=-]{1,}>/';
@@ -44,36 +47,52 @@ foreach ($fields as $field) {
 }
 $title = preg_replace('/<[\s\"\/a-zA-Z0-9-=]{1,}>/', '', $fields['title']->content);
 
-$path = $path = 'node/' . $views[$title] . '/add/nojs';
-$link = l(t('Add Note'), $path, array(
+$add_path = 'node/' . $views[$title] . '/add/nojs';
+$add_link = l(t('Add Note'), $add_path, array(
   'attributes' => array(
     'class' => 'ctools-use-modal',
   ),
 ));
+
+$notes = db_select('jdt_user_notes', 'j')
+	->fields('j')
+	->condition('article_nid', $views[$title])
+	->condition('author_uid', $user->uid)
+	->countQuery()
+	->execute()
+	->fetchField();
+
+if ($notes > 0) {
+	$note_path = 'node/' . $views[$title] . '/notes';
+	$note_link = l(t('My Notes'), $note_path, array());
+}
 ?>
 
 <div class="title">
-	<?php print $fields['title']->content; ?>
+	<?php if(!empty($fields['title']->content)) { print $fields['title']->content; } ?>
 </div>
-<div class="add_link">
-	<?php print $link; ?>
+<div class="links">
+	<?php print $add_link; ?>
+	<?php if(isset($note_link)) { print ' - ' . $note_link; } ?>
 </div>
 <div class="slug">
-	<span class="slug-quotes">"</span>
-	<span class="slug-quote"><?php print $fields['field_slug']->content; ?></span>
-	<span class="slug-quotes">"</span>
+	<?php if(!empty($fields['field_slug']->content)) : ?>
+		<span class="slug-quotes">"</span>
+		<span class="slug-quote"><?php print $fields['field_slug']->content; ?></span>
+		<span class="slug-quotes">"</span>
+	<?php endif; ?>
 </div>
 <div class="date" style="font-weight:bold;">
-	<?php print $fields['field_date']->content; ?>
+	<?php if(!empty($fields['field_date']->content)) { print $fields['field_date']->content; } ?>
 </div>
 <div class="body" style="text-align:justify;">
-	<?php print $fields['body']->content; ?>
+	<?php if(!empty($fields['body']->content)) { print $fields['body']->content; } ?>
 </div>
 <div class="image" style="align:center;">
-	<?php print $fields['field_article_image']->content; ?>
+	<?php if(!empty($fields['field_article_image']->content)) { print $fields['field_article_image']->content; } ?>
 </div>
 <div class="contributors" style="font-style:italic; text-indent:15px; font-size:20px;">
-	<?php print '- ' . $fields['field_contributors']->content; ?>
+	<?php if(!empty($fields['field_contributors']->content)) { print '- ' . $fields['field_contributors']->content; } ?>
 </div>
 <div class="related_articles">
 	<?php if (!empty($fields['field_related_articles']->content)) : ?>
@@ -82,6 +101,5 @@ $link = l(t('Add Note'), $path, array(
 	<?php endif; ?>
 </div>
 
-</div>
 <br>
 <hr>
