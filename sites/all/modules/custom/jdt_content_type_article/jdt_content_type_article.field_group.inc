@@ -23,8 +23,8 @@ function jdt_content_type_article_field_group_info() {
     'label' => 'Additional Info',
     'weight' => '40',
     'children' => array(
-      0 => 'field_related_articles',
-      1 => 'field_contributors',
+      0 => 'field_contributors',
+      1 => 'field_related_articles',
     ),
     'format_type' => 'fieldset',
     'format_settings' => array(
