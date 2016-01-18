@@ -107,6 +107,87 @@ function best_responsive_page_alter($page) {
   drupal_add_html_head($viewport, 'viewport');
 }
 
+function best_responsive_preprocess_views_view_fields(&$vars) {
+  if (isset($vars['view']->name)) {
+    $function = __FUNCTION__ . '__' . $vars['view']->name . '__' . $vars['view']->current_display;
+
+    if (function_exists($function)) {
+      $function($vars);
+    }
+  }
+}
+
+function best_responsive_preprocess_views_view_fields__articles2__block(&$vars) {
+  global $user;
+
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+  ctools_add_js('ajax-responder');
+
+  $view = $vars['view'];
+
+  $fields = array(
+    'field_field_slug',
+    'field_field_date',
+    'field_body',
+    'field_field_contributors',
+    'field_field_related_articles',
+  );
+
+  foreach ($view->result as $key => $result) {
+    $articles[$key]['title'] = $result->node_title;
+    $keys[$articles[$key]['title']] = $key;
+    
+    $contributors = $result->field_field_contributors[0]['rendered']['#markup'];
+
+    if ($contributors == $user->name) {
+      $add_path = 'node/' . $result->nid . '/add/nojs';
+      $add_link = l(t('Add Note'), $add_path, array(
+        'attributes' => array(
+          'class' => 'ctools-use-modal',
+        ),
+      ));
+
+      $add_links[$articles[$key]['title']] = $add_link;
+    }
+
+    $notes = db_select('jdt_user_notes', 'j')
+      ->fields('j')
+      ->condition('article_nid', $result->nid)
+      ->condition('author_uid', $user->uid)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    if ($notes > 0) {
+      $note_path = 'node/' . $result->nid . '/notes';
+      $note_link = l(t('My Notes'), $note_path, array());
+
+      $note_links[$articles[$key]['title']] = $note_link;
+    }
+
+    foreach ($fields as $field) {
+      $articles[$key][$field] = NULL;
+
+      if (!empty($result->$field)) {
+        $arr = $result->$field;
+        $articles[$key][$field] = $arr[0]['rendered']['#markup'];
+
+        $pattern = '/<[\s\":a-zA-Z0-9=-]{1,}>/';
+        $articles[$key][$field] = preg_replace($pattern, '', $articles[$key][$field]);
+
+        $pattern = '/<[\/\s\":a-zA-Z0-9=-]{1,}>/';
+        $articles[$key][$field] = preg_replace($pattern, '', $articles[$key][$field]);
+      }
+    }
+  }
+
+  $vars['articles'] = $articles;
+  $vars['keys'] = $keys;
+  $vars['add_links'] = $add_links;
+  $vars['note_links'] = $note_links;
+}
 
 /**
  * Add javascript files for front-page jquery slideshow.
